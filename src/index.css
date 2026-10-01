@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: 0.025em;
+    background-color: #030712;
+    color: #e0f2fe;
+  }
+}
+
+.font-tech {
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+.font-mono-tech {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Hologram grid background */
+.holo-grid {
+  background-image: 
+    linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Holographic scanlines */
+.holo-scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Arc reactor glow effect */
+.glow-arc-blue {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5), 0 0 45px rgba(6, 182, 212, 0.2), inset 0 0 15px rgba(6, 182, 212, 0.4);
+}
+
+.glow-arc-gold {
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.5), 0 0 45px rgba(234, 179, 8, 0.2), inset 0 0 15px rgba(234, 179, 8, 0.4);
+}
+
+.glow-arc-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5), 0 0 45px rgba(239, 68, 68, 0.2), inset 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.8), 0 0 20px rgba(234, 179, 8, 0.4);
+}
+
+/* Custom sci-fi scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(3, 7, 18, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.3);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.6);
+}
+
+/* Radial pulse animation */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-slow-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-spin-reverse-slow {
+  animation: spin-slow-reverse 15s linear infinite;
+}
+
+/* Toast notification slide in */
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(105%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-toast-slide-in {
+  animation: toast-slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
