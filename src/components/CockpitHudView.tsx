@@ -24,6 +24,7 @@ import {
 import { GauntletState, MarkProfile, JarvisDialogue } from '../types/gauntlet';
 import { soundFx } from '../utils/audioEffects';
 import { jarvisVoice } from '../utils/speech';
+import { FlightTelemetryWidget } from './FlightTelemetryWidget';
 
 interface CockpitHudViewProps {
   gauntletState: GauntletState;
@@ -285,7 +286,13 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
               <span className="flex items-center gap-1.5 font-bold">
                 <Layers className="w-3.5 h-3.5 text-cyan-400" /> ARMOR MARK
               </span>
-              <span className="text-[10px] font-mono-tech text-amber-400 font-bold">{gauntletState.mark}</span>
+              <button
+                onClick={() => onNavigateTab('suitParts')}
+                className="text-[10px] text-amber-400 hover:underline cursor-pointer flex items-center gap-0.5"
+              >
+                <span>ALL PARTS</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
             </div>
             <div className="grid grid-cols-5 gap-1 text-center font-mono-tech text-[10px]">
               {['MK-III', 'MK-VII', 'MK-50', 'MK-85', 'STEALTH'].map((m) => (
@@ -425,6 +432,15 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
               "{latestJarvisSpeech}"
             </p>
           </div>
+
+          {/* New Cockpit Flight Altitude, Mach Velocity & Air Density Telemetry Widget */}
+          <div className="w-full max-w-md mt-3 relative z-10">
+            <FlightTelemetryWidget
+              flightStabilizersPower={gauntletState.powerRouting.flightStabilizers}
+              repulsorCharge={gauntletState.repulsorCharge}
+              arcReactorOutputGW={gauntletState.arcReactorOutputGW}
+            />
+          </div>
         </div>
 
         {/* ========================================================================= */}
@@ -520,7 +536,12 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
               <span className="flex items-center gap-1.5 font-bold">
                 <Bell className="w-3.5 h-3.5 text-cyan-400" /> DIRECTIVE REMINDERS
               </span>
-              <span className="text-[10px] font-mono-tech text-emerald-400">ACTIVE</span>
+              <button
+                onClick={() => onNavigateTab('avengers')}
+                className="text-[10px] text-emerald-400 hover:underline cursor-pointer flex items-center gap-0.5 font-bold"
+              >
+                <span>AVENGERS COMMS ↗</span>
+              </button>
             </div>
             <div className="text-[11px] font-mono-tech text-gray-300 bg-gray-900/80 p-2 rounded border border-gray-800 truncate">
               • Calibrate finger servos & NeoPixel ring
@@ -533,7 +554,12 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
               <span className="flex items-center gap-1.5 font-bold">
                 <Zap className="w-3.5 h-3.5 text-cyan-400" /> POWER ROUTING
               </span>
-              <span className="text-[10px] font-mono-tech text-cyan-400">4.5 GW</span>
+              <button
+                onClick={() => onNavigateTab('cameras')}
+                className="text-[10px] text-emerald-400 hover:underline cursor-pointer flex items-center gap-0.5"
+              >
+                <span>TOWER CAMERAS ↗</span>
+              </button>
             </div>
             <div className="grid grid-cols-2 gap-1 text-[10px] font-mono-tech">
               <div className="bg-gray-900/60 p-1 rounded text-cyan-200">

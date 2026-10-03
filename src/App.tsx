@@ -3,7 +3,7 @@
  * Stark Industries Terminal for Mr. Tony Stark
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Shield, 
   Cpu, 
@@ -19,7 +19,26 @@ import {
   Clock,
   Globe,
   FolderDown,
-  LayoutGrid
+  LayoutGrid,
+  Video,
+  Fingerprint,
+  Eye,
+  Lock,
+  Unlock,
+  Mic,
+  Users,
+  PhoneCall,
+  Satellite,
+  Flame,
+  Disc,
+  Lightbulb,
+  Bot,
+  Film,
+  Hammer,
+  Palette,
+  Target,
+  Sword,
+  MapPin
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { CockpitHudView } from './components/CockpitHudView';
@@ -33,7 +52,29 @@ import { StarkWorldDataHub } from './components/StarkWorldDataHub';
 import { PublishingCommandCenter } from './components/PublishingCommandCenter';
 import { PublishGuideModal } from './components/PublishGuideModal';
 import { JarvisToastContainer } from './components/JarvisToastContainer';
+import { BiometricAuthModal } from './components/BiometricAuthModal';
+import { StarkTowerCameras } from './components/StarkTowerCameras';
+import { SuitPartsInspector } from './components/SuitPartsInspector';
+import { JarvisWakeHudBanner } from './components/JarvisWakeHudBanner';
+import { AvengersCommLink } from './components/AvengersCommLink';
+import { RealFriendsCommBridge } from './components/RealFriendsCommBridge';
+import { HolographicDisplay } from './components/HolographicDisplay';
+import { HelmetVisionAr } from './components/HelmetVisionAr';
+import { VeronicaHulkbusterDrop } from './components/VeronicaHulkbusterDrop';
+import { HousePartyProtocolSquad } from './components/HousePartyProtocolSquad';
+import { StarkWorkshopJukebox } from './components/StarkWorkshopJukebox';
+import { StarkSmartHomeIot } from './components/StarkSmartHomeIot';
+import { AiPersonaMatrix } from './components/AiPersonaMatrix';
+import { AllIronManSuitsVault } from './components/AllIronManSuitsVault';
+import { HulkbusterHeavyBattlestation } from './components/HulkbusterHeavyBattlestation';
+import { IronManCinematicUniverseTheater } from './components/IronManCinematicUniverseTheater';
+import { NanoGauntletInfinitySnap } from './components/NanoGauntletInfinitySnap';
+import { DogfightRadarSimulator } from './components/DogfightRadarSimulator';
+import { StarkArmorPaintShop } from './components/StarkArmorPaintShop';
+import { NanotechWeaponsForge } from './components/NanotechWeaponsForge';
+import { GlobalThreatIntelGlobe } from './components/GlobalThreatIntelGlobe';
 import { ToastProvider, useToast } from './context/ToastContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { 
   GauntletState, 
   ArmorMark, 
@@ -43,17 +84,58 @@ import {
 } from './types/gauntlet';
 import { MARK_PROFILES } from './data/markProfiles';
 import { soundFx } from './utils/audioEffects';
+import { jarvisVoice } from './utils/speech';
+import { jarvisWakeEngine, WakeWordStatus } from './utils/wakeWord';
 
 function MainAppContent() {
   const { addToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<
-    'cockpit' | 'gauntlet' | 'timers' | 'worldData' | 'publishing' | 'reactor' | 'workshop' | 'protocols'
-  >('cockpit'); // Default to Cockpit layout requested in Sirly Sarah's wireframe!
+    | 'cockpit'
+    | 'nanoForge'
+    | 'threatMap'
+    | 'infinitySnap'
+    | 'dogfightRadar'
+    | 'paintShop'
+    | 'allSuits'
+    | 'hulkbusterStation'
+    | 'aiPersona'
+    | 'mcuMovies'
+    | 'helmetAr'
+    | 'hologram'
+    | 'veronica'
+    | 'houseParty'
+    | 'jukebox'
+    | 'smartHome'
+    | 'avengers'
+    | 'friendCalls'
+    | 'suitParts'
+    | 'cameras'
+    | 'gauntlet'
+    | 'timers'
+    | 'worldData'
+    | 'publishing'
+    | 'reactor'
+    | 'workshop'
+    | 'protocols'
+  >(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('freq') || p.get('room')) return 'friendCalls';
+    }
+    return 'cockpit';
+  });
 
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isBiometricsOpen, setIsBiometricsOpen] = useState(false);
+  const [isBiometricAuthenticated, setIsBiometricAuthenticated] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [voiceTriggeredTimerSecs, setVoiceTriggeredTimerSecs] = useState<number | null>(null);
+
+  // Wake word ("Jarvis") state
+  const [wakeWordStatus, setWakeWordStatus] = useState<WakeWordStatus>('DISABLED');
+  const [isWakeWordEnabled, setIsWakeWordEnabled] = useState(false);
+  const [interimSpeech, setInterimSpeech] = useState('');
 
   const [gauntletState, setGauntletState] = useState<GauntletState>({
     mark: 'MK-50',
@@ -98,7 +180,7 @@ function MainAppContent() {
   }, [addToast]);
 
   // Action executor triggered by J.A.R.V.I.S. voice/chat command
-  const handleExecuteJarvisAction = (action: string, parameter: string | null) => {
+  const handleExecuteJarvisAction = useCallback((action: string, parameter: string | null) => {
     switch (action) {
       case 'charge_repulsors': {
         const level = parameter ? parseInt(parameter, 10) || 100 : 100;
@@ -157,6 +239,245 @@ function MainAppContent() {
 
       case 'launch_missiles': {
         handleLaunchMissile();
+        break;
+      }
+
+      case 'open_avengers_comms':
+      case 'call_avengers_group':
+      case 'call_avenger': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('avengers');
+        addToast({
+          title: 'Avengers Comms Bridge Online',
+          message: 'Subspace frequencies synchronized with Thor, Bruce Banner, and Loki.',
+          type: 'tactical',
+        });
+        break;
+      }
+
+      case 'call_friend':
+      case 'open_friend_call': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('friendCalls');
+        addToast({
+          title: 'Real-World Comm Bridge Online',
+          message: 'WebRTC P2P frequency ready. Copy your invite link and send it to your friends!',
+          type: 'status',
+        });
+        break;
+      }
+
+      case 'open_hologram':
+      case 'show_hologram':
+      case 'holographic_display': {
+        soundFx.playHologramActivate();
+        setActiveTab('hologram');
+        addToast({
+          title: 'Holographic Projection Deck Online',
+          message: 'Volumetric 3D photon projection engaged with 360° interactive rotation.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_helmet_ar':
+      case 'show_helmet_ar': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('helmetAr');
+        addToast({
+          title: 'Helmet AR Vision Online',
+          message: 'Optical targeting system and biometric HUD engaged.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_veronica':
+      case 'deploy_hulkbuster': {
+        soundFx.playArcReactorPulse();
+        setActiveTab('veronica');
+        addToast({
+          title: 'Veronica Platform Activated',
+          message: 'Hulkbuster orbital telemetry online.',
+          type: 'alert',
+        });
+        break;
+      }
+
+      case 'open_house_party':
+      case 'house_party_protocol': {
+        soundFx.playRepulsorBlast();
+        setActiveTab('houseParty');
+        addToast({
+          title: 'House Party Protocol Online',
+          message: 'Automated drone armor squadron awaiting commands.',
+          type: 'alert',
+        });
+        break;
+      }
+
+      case 'open_jukebox':
+      case 'play_music': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('jukebox');
+        addToast({
+          title: 'Stark Soundstage Online',
+          message: 'Workshop music synthesizer and ATC scanner ready.',
+          type: 'status',
+        });
+        break;
+      }
+
+      case 'open_smart_home':
+      case 'smart_lights': {
+        soundFx.playHudBeep('subtle');
+        setActiveTab('smartHome');
+        addToast({
+          title: 'Stark IoT Hub Online',
+          message: 'Workshop ambient lighting and blast doors ready.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_all_suits':
+      case 'hall_of_armors': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('allSuits');
+        addToast({
+          title: 'Stark Hall of Armors Online',
+          message: 'All 24 canonical Iron Man suits accessible.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_hulkbuster_station':
+      case 'hulkbuster_battlestation': {
+        soundFx.playArcReactorPulse();
+        setActiveTab('hulkbusterStation');
+        addToast({
+          title: 'Hulkbuster Battlestation Online',
+          message: 'Pneumatic jackhammer gauntlet ready.',
+          type: 'alert',
+        });
+        break;
+      }
+
+      case 'open_ai_persona':
+      case 'switch_ai':
+      case 'friday':
+      case 'ultron': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('aiPersona');
+        addToast({
+          title: 'AI Neural Matrix Online',
+          message: 'J.A.R.V.I.S., F.R.I.D.A.Y., U.L.T.R.O.N., and E.D.I.T.H. ready.',
+          type: 'status',
+        });
+        break;
+      }
+
+      case 'open_mcu_movies':
+      case 'iron_man_movies': {
+        soundFx.playHudBeep('subtle');
+        setActiveTab('mcuMovies');
+        addToast({
+          title: 'MCU Iron Man Theater Online',
+          message: 'All 9 MCU films and iconic dialogues cataloged.',
+          type: 'status',
+        });
+        break;
+      }
+
+      case 'open_infinity_snap':
+      case 'infinity_snap':
+      case 'snap': {
+        soundFx.playArcReactorPulse();
+        setActiveTab('infinitySnap');
+        addToast({
+          title: 'Nano Gauntlet Infinity Core Online',
+          message: 'Cosmic gamma channels synchronized with all 6 Infinity Stones.',
+          type: 'alert',
+        });
+        break;
+      }
+
+      case 'open_dogfight_radar':
+      case 'dogfight': {
+        soundFx.playHudBeep('alert');
+        setActiveTab('dogfightRadar');
+        addToast({
+          title: 'Dogfight Radar Scanner Online',
+          message: '360° RWR active. Hostile bogeys acquired on intercept grid.',
+          type: 'tactical',
+        });
+        break;
+      }
+
+      case 'open_paint_shop':
+      case 'custom_paint': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('paintShop');
+        addToast({
+          title: 'Stark Armor Paint Shop Online',
+          message: 'Nanocoating studio and dual-tone palette calibrated.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_nanotech_forge':
+      case 'nanotech_weapons':
+      case 'nano_blade': {
+        soundFx.playRepulsorCharge();
+        setActiveTab('nanoForge');
+        addToast({
+          title: 'Nanotech Weapons Forge Online',
+          message: 'Liquid smart-metal molecular shape-shifting active.',
+          type: 'alert',
+        });
+        break;
+      }
+
+      case 'open_threat_map':
+      case 'threat_map':
+      case 'orbital_strike': {
+        soundFx.playArcReactorPulse();
+        setActiveTab('threatMap');
+        addToast({
+          title: 'Global Threat Network Online',
+          message: 'Orbital satellite defense and hotspot monitoring active.',
+          type: 'alert',
+        });
+        break;
+      }
+
+      case 'open_cameras': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('cameras');
+        addToast({
+          title: 'Stark Surveillance Linked',
+          message: 'Tactical camera viewport switched to live CCTV feed network.',
+          type: 'status',
+        });
+        break;
+      }
+
+      case 'open_suit_parts': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('suitParts');
+        addToast({
+          title: 'Suit Architecture Opened',
+          message: 'Component inspector loaded: Helmet, Uni-Beam, Flaps, and Boot Thrusters.',
+          type: 'tactical',
+        });
+        break;
+      }
+
+      case 'open_biometrics': {
+        soundFx.playHudBeep('mode');
+        setIsBiometricsOpen(true);
         break;
       }
 
@@ -234,10 +555,126 @@ function MainAppContent() {
       default:
         break;
     }
+  }, []);
+
+  // Voice Command Dispatcher: Processes speech after wake word
+  const handleProcessVoiceCommand = useCallback(async (spokenQuery: string) => {
+    setIsProcessing(true);
+    setInterimSpeech(spokenQuery);
+
+    try {
+      const response = await fetch('/api/jarvis/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: spokenQuery,
+          currentStatus: {
+            mark: gauntletState.mark,
+            activeProtocol: gauntletState.activeProtocol,
+            repulsorCharge: gauntletState.repulsorCharge,
+            missileCount: gauntletState.missileCount,
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.spokenResponse) {
+        jarvisVoice.speak(data.spokenResponse);
+        addToast({
+          title: 'J.A.R.V.I.S. Response',
+          message: data.spokenResponse,
+          type: 'tactical',
+        });
+      }
+
+      if (data.action && data.action !== 'none') {
+        handleExecuteJarvisAction(data.action, data.parameter || null);
+      }
+    } catch (err) {
+      console.error('[J.A.R.V.I.S.] Voice command execution error:', err);
+      jarvisVoice.speak('I apologize, Mr. Stark. I encountered a minor neural desynchronization.');
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => setInterimSpeech(''), 3000);
+    }
+  }, [gauntletState, addToast, handleExecuteJarvisAction]);
+
+  // Register Wake Word ("Jarvis") Engine Callbacks
+  useEffect(() => {
+    jarvisWakeEngine.registerEvents({
+      onStatusChange: (status) => {
+        setWakeWordStatus(status);
+        setIsWakeWordEnabled(status !== 'DISABLED');
+      },
+      onWakeWordTriggered: () => {
+        addToast({
+          title: 'Hotword Detected: "Jarvis"',
+          message: 'Microphone opened. J.A.R.V.I.S. is listening to Mr. Stark...',
+          type: 'tactical',
+        });
+      },
+      onInterimSpeech: (transcript) => {
+        setInterimSpeech(transcript);
+      },
+      onCommandDetected: (cmd) => {
+        handleProcessVoiceCommand(cmd);
+      },
+      onError: (err) => {
+        console.warn('Wake word engine notice:', err);
+      },
+    });
+
+    return () => {
+      jarvisWakeEngine.disable();
+    };
+  }, [handleProcessVoiceCommand, addToast]);
+
+  // Toggle Wake Word Detection
+  const handleToggleWakeWord = () => {
+    if (isWakeWordEnabled) {
+      jarvisWakeEngine.disable();
+      setIsWakeWordEnabled(false);
+      soundFx.playHudBeep('subtle');
+      addToast({
+        title: 'Wake Word Standby',
+        message: 'Hotword radar paused. Click "ACTIVATE JARVIS MIC" to turn back on.',
+        type: 'status',
+      });
+    } else {
+      const ok = jarvisWakeEngine.enable();
+      if (ok) {
+        setIsWakeWordEnabled(true);
+        soundFx.playHudBeep('confirm');
+        jarvisVoice.speak('Hotword detection active, Mr. Stark. Just say Jarvis at any time.');
+        addToast({
+          title: 'Hotword Radar Online',
+          message: 'Ambient microphone active. Say "Jarvis" to issue voice commands hands-free!',
+          type: 'status',
+        });
+      } else {
+        addToast({
+          title: 'Microphone Permission Needed',
+          message: 'Please grant microphone access in your browser to enable "Jarvis" hotword detection.',
+          type: 'alert',
+        });
+      }
+    }
   };
 
   // Charge palm repulsor
   const handleChargeRepulsor = (level: number) => {
+    if (!isBiometricAuthenticated) {
+      soundFx.playHudBeep('alert');
+      addToast({
+        title: 'Action Prohibited: Suit Locked',
+        message: 'Biometric authorization required to charge weapons.',
+        type: 'alert',
+      });
+      setIsBiometricsOpen(true);
+      return;
+    }
+
     setGauntletState((prev) => ({
       ...prev,
       repulsorCharge: Math.min(100, level),
@@ -253,6 +690,17 @@ function MainAppContent() {
 
   // Concussive repulsor blast
   const handleFireRepulsor = () => {
+    if (!isBiometricAuthenticated) {
+      soundFx.playHudBeep('alert');
+      addToast({
+        title: 'Discharge Blocked: Security Lock',
+        message: 'Biometric verification required to fire repulsors, Mr. Stark.',
+        type: 'alert',
+      });
+      setIsBiometricsOpen(true);
+      return;
+    }
+
     soundFx.playRepulsorBlast();
     setGauntletState((prev) => ({
       ...prev,
@@ -284,6 +732,17 @@ function MainAppContent() {
 
   // Micro-missile launch
   const handleLaunchMissile = () => {
+    if (!isBiometricAuthenticated) {
+      soundFx.playHudBeep('alert');
+      addToast({
+        title: 'Weapons Locked',
+        message: 'Biometric authentication required to deploy ordnance.',
+        type: 'alert',
+      });
+      setIsBiometricsOpen(true);
+      return;
+    }
+
     if (gauntletState.missileCount <= 0) {
       addToast({
         title: 'Missile Pod Empty',
@@ -369,21 +828,67 @@ function MainAppContent() {
       {/* Toast Notification Container in Top-Right Corner */}
       <JarvisToastContainer />
 
-      {/* Stark HUD Header (Wide Horizontal Bar matching the wireframe diagram) */}
+      {/* Biometric Authentication Terminal Modal */}
+      <BiometricAuthModal
+        isOpen={isBiometricsOpen}
+        onClose={() => setIsBiometricsOpen(false)}
+        isAuthenticated={isBiometricAuthenticated}
+        onAuthenticationSuccess={() => {
+          setIsBiometricAuthenticated(true);
+          setIsBiometricsOpen(false);
+        }}
+        onLockSystem={() => {
+          setIsBiometricAuthenticated(false);
+          setIsBiometricsOpen(false);
+        }}
+      />
+
+      {/* Stark HUD Header */}
       <Header
         onReset={handleReset}
         onOpenPublishGuide={() => setActiveTab('publishing')}
         activeProtocol={gauntletState.activeProtocol}
         isJarvisThinking={isProcessing}
+        isBiometricAuthenticated={isBiometricAuthenticated}
+        onOpenBiometrics={() => setIsBiometricsOpen(true)}
+        isWakeWordEnabled={isWakeWordEnabled}
+        onToggleWakeWord={handleToggleWakeWord}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col gap-4">
-        {/* Navigation Tabs */}
+        {/* Ambient "Say Jarvis" Wake Word HUD Banner */}
+        <JarvisWakeHudBanner
+          status={wakeWordStatus}
+          isEnabled={isWakeWordEnabled}
+          interimTranscript={interimSpeech}
+          onToggleWakeWord={handleToggleWakeWord}
+        />
+
+        {/* Navigation Tabs (27 Operational Centers) */}
         <div className="flex items-center gap-1.5 p-1 bg-gray-900/90 border border-cyan-500/20 rounded-xl overflow-x-auto">
           {[
             { id: 'cockpit', label: 'Cockpit Wireframe HUD', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-            { id: 'gauntlet', label: 'Detailed Gauntlet & AI Core', icon: <Crosshair className="w-3.5 h-3.5" /> },
+            { id: 'nanoForge', label: 'Nanotech Weapons Forge', icon: <Sword className="w-3.5 h-3.5 text-cyan-400 animate-pulse" /> },
+            { id: 'threatMap', label: 'Global Threat Map', icon: <MapPin className="w-3.5 h-3.5 text-red-400" /> },
+            { id: 'infinitySnap', label: 'Nano Gauntlet Snap', icon: <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" /> },
+            { id: 'dogfightRadar', label: 'Dogfight Radar Sim', icon: <Target className="w-3.5 h-3.5 text-emerald-400" /> },
+            { id: 'paintShop', label: 'Armor Paint Shop', icon: <Palette className="w-3.5 h-3.5 text-purple-400" /> },
+            { id: 'allSuits', label: 'All 24 Suits Vault', icon: <Layers className="w-3.5 h-3.5 text-amber-400" /> },
+            { id: 'hulkbusterStation', label: 'Hulkbuster Battlestation', icon: <Hammer className="w-3.5 h-3.5 text-red-400" /> },
+            { id: 'aiPersona', label: 'AI Persona (Friday/Ultron)', icon: <Bot className="w-3.5 h-3.5 text-orange-400 animate-pulse" /> },
+            { id: 'mcuMovies', label: 'MCU Film Archive & Theater', icon: <Film className="w-3.5 h-3.5 text-cyan-300" /> },
+            { id: 'helmetAr', label: 'Helmet Vision AR', icon: <Crosshair className="w-3.5 h-3.5 text-cyan-400" /> },
+            { id: 'hologram', label: '3D Holographic Display', icon: <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-pulse" /> },
+            { id: 'veronica', label: 'Veronica Hulkbuster Drop', icon: <Satellite className="w-3.5 h-3.5 text-amber-400" /> },
+            { id: 'houseParty', label: 'House Party Squadron', icon: <Flame className="w-3.5 h-3.5 text-red-400" /> },
+            { id: 'jukebox', label: 'Soundstage & Radio', icon: <Disc className="w-3.5 h-3.5 text-red-300" /> },
+            { id: 'smartHome', label: 'Smart Home & IoT', icon: <Lightbulb className="w-3.5 h-3.5 text-emerald-400" /> },
+            { id: 'friendCalls', label: 'Call Real Friends (WebRTC)', icon: <PhoneCall className="w-3.5 h-3.5 text-cyan-400 animate-bounce" /> },
+            { id: 'avengers', label: 'Avengers Comms (Thor/Hulk/Loki)', icon: <Users className="w-3.5 h-3.5 text-emerald-400" /> },
+            { id: 'suitParts', label: 'Suit Component Inspector', icon: <Layers className="w-3.5 h-3.5 text-amber-400" /> },
+            { id: 'cameras', label: 'Stark Tower CCTV Feeds', icon: <Video className="w-3.5 h-3.5 text-emerald-400" /> },
+            { id: 'gauntlet', label: 'Gauntlet & AI Core', icon: <Sliders className="w-3.5 h-3.5" /> },
             { id: 'timers', label: 'Timers & Reminders', icon: <Clock className="w-3.5 h-3.5" /> },
             { id: 'worldData', label: 'Satellite Weather & News', icon: <Globe className="w-3.5 h-3.5" /> },
             { id: 'publishing', label: 'Publishing (Win/Mac/Linux/Android)', icon: <FolderDown className="w-3.5 h-3.5" /> },
@@ -435,13 +940,123 @@ function MainAppContent() {
               });
             }}
             onExecuteJarvisAction={handleExecuteJarvisAction}
-            onNavigateTab={(tab) => setActiveTab(tab as any)}
+            onNavigateTab={(tab) => {
+              if (tab === 'biometrics') {
+                setIsBiometricsOpen(true);
+              } else {
+                setActiveTab(tab as any);
+              }
+            }}
             isProcessing={isProcessing}
             setIsProcessing={setIsProcessing}
           />
         )}
 
-        {/* Tab 2: Detailed Gauntlet & AI Core */}
+        {/* Tab: Nanotech Weapons Morphing Forge */}
+        {activeTab === 'nanoForge' && (
+          <NanotechWeaponsForge />
+        )}
+
+        {/* Tab: Global Threat Map & Orbital Satellite Strike */}
+        {activeTab === 'threatMap' && (
+          <GlobalThreatIntelGlobe />
+        )}
+
+        {/* Tab: Nano Gauntlet 6-Stone Cosmic Snap */}
+        {activeTab === 'infinitySnap' && (
+          <NanoGauntletInfinitySnap />
+        )}
+
+        {/* Tab: Dogfight Tactical Radar Simulator */}
+        {activeTab === 'dogfightRadar' && (
+          <DogfightRadarSimulator />
+        )}
+
+        {/* Tab: Stark Armor Paint Shop & Nanotech Customizer */}
+        {activeTab === 'paintShop' && (
+          <StarkArmorPaintShop />
+        )}
+
+        {/* Tab: All 24 Canonical Iron Man Suits Vault (Hall of Armors) */}
+        {activeTab === 'allSuits' && (
+          <AllIronManSuitsVault
+            currentMark={gauntletState.mark}
+            onEquipSuit={(mark) => {
+              setGauntletState((prev) => ({ ...prev, mark }));
+            }}
+          />
+        )}
+
+        {/* Tab: Dedicated Hulkbuster Battlestation */}
+        {activeTab === 'hulkbusterStation' && (
+          <HulkbusterHeavyBattlestation />
+        )}
+
+        {/* Tab: AI Persona Switcher (J.A.R.V.I.S., F.R.I.D.A.Y., U.L.T.R.O.N., E.D.I.T.H.) */}
+        {activeTab === 'aiPersona' && (
+          <AiPersonaMatrix />
+        )}
+
+        {/* Tab: Complete MCU Iron Man Film Archive & Theater */}
+        {activeTab === 'mcuMovies' && (
+          <IronManCinematicUniverseTheater />
+        )}
+
+        {/* Tab: Helmet Computer Vision AR */}
+        {activeTab === 'helmetAr' && (
+          <HelmetVisionAr />
+        )}
+
+        {/* Tab 2: Stark Volumetric 3D Holographic Projection Deck */}
+        {activeTab === 'hologram' && (
+          <HolographicDisplay />
+        )}
+
+        {/* Tab: Veronica Hulkbuster Orbital Drop */}
+        {activeTab === 'veronica' && (
+          <VeronicaHulkbusterDrop />
+        )}
+
+        {/* Tab: House Party Protocol Multi-Armor Drone Squadron */}
+        {activeTab === 'houseParty' && (
+          <HousePartyProtocolSquad />
+        )}
+
+        {/* Tab: Stark Workshop Soundstage & ATC Jukebox */}
+        {activeTab === 'jukebox' && (
+          <StarkWorkshopJukebox />
+        )}
+
+        {/* Tab: Stark Smart Home & IoT Automation Bridge */}
+        {activeTab === 'smartHome' && (
+          <StarkSmartHomeIot />
+        )}
+
+        {/* Tab 3: Real-World Friends Calling Bridge (WebRTC Live Audio/Video) */}
+        {activeTab === 'friendCalls' && (
+          <RealFriendsCommBridge />
+        )}
+
+        {/* Tab 3: Avengers Tactical Comms & WhatsApp Group Calls */}
+        {activeTab === 'avengers' && (
+          <AvengersCommLink />
+        )}
+
+        {/* Tab 3: Full Suit Subsystem Inspector (Helmet, Uni-Beam, Flaps, Thrusters) */}
+        {activeTab === 'suitParts' && (
+          <SuitPartsInspector
+            currentMark={gauntletState.mark}
+            onFireRepulsor={handleFireRepulsor}
+            onChargeRepulsor={handleChargeRepulsor}
+          />
+        )}
+
+        {/* Tab 3: Stark Tower CCTV Surveillance Camera Network */}
+        {activeTab === 'cameras' && (
+          <StarkTowerCameras />
+        )}
+
+        {/* Tab 4: Detailed Gauntlet & AI Core */}
         {activeTab === 'gauntlet' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
             <div className="lg:col-span-7 flex flex-col">
@@ -467,22 +1082,22 @@ function MainAppContent() {
           </div>
         )}
 
-        {/* Tab 3: Timers & Reminders Hub */}
+        {/* Tab 5: Timers & Reminders Hub */}
         {activeTab === 'timers' && (
           <RemindersTimersHub externalTimerTrigger={voiceTriggeredTimerSecs} />
         )}
 
-        {/* Tab 4: Satellite Weather & News Data Hub */}
+        {/* Tab 6: Satellite Weather & News Data Hub */}
         {activeTab === 'worldData' && (
           <StarkWorldDataHub />
         )}
 
-        {/* Tab 5: Publishing & Packaging Command Center (Windows, macOS, Linux, Android) */}
+        {/* Tab 7: Publishing & Packaging Command Center (Windows, macOS, Linux, Android) */}
         {activeTab === 'publishing' && (
           <PublishingCommandCenter />
         )}
 
-        {/* Tab 6: Arc Reactor Power Grid */}
+        {/* Tab 8: Arc Reactor Power Grid */}
         {activeTab === 'reactor' && (
           <div className="space-y-4">
             <ArcReactorPowerGrid
@@ -522,7 +1137,7 @@ function MainAppContent() {
           </div>
         )}
 
-        {/* Tab 7: Stark Blueprint Workshop */}
+        {/* Tab 9: Stark Blueprint Workshop */}
         {activeTab === 'workshop' && (
           <GauntletWorkshop
             currentMark={gauntletState.mark}
@@ -559,7 +1174,7 @@ function MainAppContent() {
           />
         )}
 
-        {/* Tab 8: Defense Protocols */}
+        {/* Tab 10: Defense Protocols */}
         {activeTab === 'protocols' && (
           <TacticalProtocols
             activeProtocol={gauntletState.activeProtocol}
@@ -606,13 +1221,16 @@ function MainAppContent() {
 
           <div className="flex items-center gap-3 text-[11px] font-mono-tech">
             <button
-              onClick={() => setActiveTab('publishing')}
-              className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+              onClick={() => setIsBiometricsOpen(true)}
+              className="text-cyan-400 hover:text-cyan-300 underline cursor-pointer flex items-center gap-1"
             >
-              Packaging for Win, Mac, Linux & Android
+              <Fingerprint className="w-3 h-3" />
+              <span>Biometric Security Terminal</span>
             </button>
             <span className="text-gray-700">|</span>
-            <span className="text-emerald-400">STATUS: SYSTEMS ONLINE</span>
+            <span className="text-emerald-400">
+              STATUS: {isBiometricAuthenticated ? 'ALPHA-1 AUTHORIZED' : 'LOCKED'}
+            </span>
           </div>
         </div>
       </footer>
@@ -628,8 +1246,10 @@ function MainAppContent() {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <MainAppContent />
-    </ToastProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <MainAppContent />
+      </ToastProvider>
+    </ThemeProvider>
   );
 }

@@ -9,9 +9,12 @@ interface IWindowWithSpeech extends Window {
   webkitSpeechRecognition?: any;
 }
 
+export type AiPersona = 'JARVIS' | 'FRIDAY' | 'ULTRON' | 'EDITH';
+
 export class JarvisSpeechEngine {
   private synth: SpeechSynthesis | null = null;
   private voice: SpeechSynthesisVoice | null = null;
+  private currentPersona: AiPersona = 'JARVIS';
   private recognition: any = null;
   private isListening: boolean = false;
   private isSpeaking: boolean = false;
@@ -27,10 +30,44 @@ export class JarvisSpeechEngine {
     }
   }
 
+  public setPersona(persona: AiPersona) {
+    this.currentPersona = persona;
+    this.initVoice();
+  }
+
+  public getPersona(): AiPersona {
+    return this.currentPersona;
+  }
+
   private initVoice() {
     if (!this.synth) return;
     const voices = this.synth.getVoices();
-    // Prioritize British English male / refined voices for J.A.R.V.I.S. persona
+
+    if (this.currentPersona === 'FRIDAY') {
+      // Prioritize female / Irish / refined voices
+      const preferred = ['Moira', 'en-IE', 'Female', 'Google UK English Female', 'Samantha', 'Karen', 'Victoria', 'Fiona'];
+      let chosen: SpeechSynthesisVoice | null = null;
+      for (const pref of preferred) {
+        chosen = voices.find((v) => v.name.includes(pref) || v.lang.includes(pref)) || null;
+        if (chosen) break;
+      }
+      this.voice = chosen || voices.find((v) => v.name.toLowerCase().includes('female')) || voices[0] || null;
+      return;
+    }
+
+    if (this.currentPersona === 'ULTRON') {
+      // Prioritize deep / robotic / sinister male voices
+      const preferred = ['Fred', 'Alex', 'Google US English', 'Male', 'en-US'];
+      let chosen: SpeechSynthesisVoice | null = null;
+      for (const pref of preferred) {
+        chosen = voices.find((v) => v.name.includes(pref) || v.lang.includes(pref)) || null;
+        if (chosen) break;
+      }
+      this.voice = chosen || voices[0] || null;
+      return;
+    }
+
+    // Default J.A.R.V.I.S. (UK male)
     const preferredVoices = [
       'Daniel', // macOS/iOS iconic UK male
       'Google UK English Male',
@@ -49,7 +86,6 @@ export class JarvisSpeechEngine {
       if (chosen) break;
     }
 
-    // Fallback to any en-GB or any English voice
     if (!chosen) {
       chosen =
         voices.find((v) => v.lang.startsWith('en-GB')) ||
@@ -61,7 +97,7 @@ export class JarvisSpeechEngine {
   }
 
   /**
-   * Speak text in J.A.R.V.I.S. persona
+   * Speak text in active AI persona
    */
   public speak(
     text: string,
@@ -94,9 +130,22 @@ export class JarvisSpeechEngine {
       if (this.voice) {
         utterance.voice = this.voice;
       }
-      // Calm, sophisticated cadence
-      utterance.pitch = 0.95;
-      utterance.rate = 1.05;
+
+      // Persona-specific pitch and cadence
+      if (this.currentPersona === 'FRIDAY') {
+        utterance.pitch = 1.25;
+        utterance.rate = 1.08;
+      } else if (this.currentPersona === 'ULTRON') {
+        utterance.pitch = 0.52; // Menacing low pitch
+        utterance.rate = 0.88; // Deliberate cadence
+      } else if (this.currentPersona === 'EDITH') {
+        utterance.pitch = 1.1;
+        utterance.rate = 1.1;
+      } else {
+        // J.A.R.V.I.S.
+        utterance.pitch = 0.95;
+        utterance.rate = 1.05;
+      }
 
       utterance.onstart = () => {
         this.isSpeaking = true;

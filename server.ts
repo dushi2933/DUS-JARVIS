@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
 import { GoogleGenAI, Type } from '@google/genai';
 
 dotenv.config();
@@ -149,6 +151,222 @@ function generateLocalJarvisResponse(prompt: string, currentStatus: any) {
     };
   }
 
+  if (p.includes('call the avengers') || p.includes('avengers group call') || p.includes('group call') || p.includes('call everyone') || p.includes('assemble the avengers')) {
+    return {
+      spokenResponse: 'Initiating quantum encrypted conference call to all Avengers units, Mr. Stark. Thor, Banner, and Loki are patching in.',
+      action: 'call_avengers_group',
+      parameter: null,
+      tacticalAdvice: 'Multi-point holographic bridge connected across New Asgard, the Compound, and TVA frequencies.',
+    };
+  }
+
+  if (p.includes('call thor') || p.includes('patch in thor') || p.includes('reach thor')) {
+    return {
+      spokenResponse: 'Opening direct subspace comm-link to Thor in New Asgard, Mr. Stark. Bifrost carrier frequency locked.',
+      action: 'call_avenger',
+      parameter: 'thor',
+      tacticalAdvice: 'Sub-atmospheric audio channels calibrated for thunderous resonance, Sir.',
+    };
+  }
+
+  if (p.includes('call hulk') || p.includes('call banner') || p.includes('call bruce')) {
+    return {
+      spokenResponse: 'Dialing Dr. Bruce Banner at the Compound laboratory, Mr. Stark. Gamma filters initialized.',
+      action: 'call_avenger',
+      parameter: 'hulk',
+      tacticalAdvice: 'Direct laboratory biometric audio feed connected, Sir.',
+    };
+  }
+
+  if (p.includes('call loki') || p.includes('reach loki') || p.includes('contact loki')) {
+    return {
+      spokenResponse: 'Routing inter-dimensional carrier wave to Loki, Mr. Stark. Caution advised regarding mischief.',
+      action: 'call_avenger',
+      parameter: 'loki',
+      tacticalAdvice: 'Temporal displacement dampeners active on the audio carrier.',
+    };
+  }
+
+  if (p.includes('hologram') || p.includes('holographic') || p.includes('3d display') || p.includes('projection deck') || p.includes('wireframe model')) {
+    return {
+      spokenResponse: 'Powering up the 3D Volumetric Holographic Projection Deck, Mr. Stark. Photon emitter arrays aligned for 360-degree interactive rotation.',
+      action: 'open_hologram',
+      parameter: null,
+      tacticalAdvice: 'Volumetric photonic lasers focused. Mark 85 nano-armor and satellite radar schematics ready.',
+    };
+  }
+
+  if (p.includes('android message') || p.includes('android messages') || p.includes('rcs') || p.includes('sms')) {
+    return {
+      spokenResponse: 'Accessing Android Messages and RCS encrypted comms bridge, Mr. Stark. Ready to dispatch invite transmissions to your contacts.',
+      action: 'open_friend_call',
+      parameter: 'android-messages',
+      tacticalAdvice: 'Carrier RCS and SMS intents mapped for real-world peer calling, Sir.',
+    };
+  }
+
+  if (p.includes('helmet') || p.includes('vision') || p.includes('vitals') || p.includes('ecg') || p.includes('target lock') || p.includes('ar optics')) {
+    return {
+      spokenResponse: 'Engaging Helmet Computer Vision and AR HUD, Mr. Stark. Optical targeting reticles locked and pilot biometrics online.',
+      action: 'open_helmet_ar',
+      parameter: null,
+      tacticalAdvice: 'Real-time facial tracking and thermal FLIR ready, Sir.',
+    };
+  }
+
+  if (p.includes('veronica') || p.includes('hulkbuster') || p.includes('orbital drop') || p.includes('heavy armor')) {
+    return {
+      spokenResponse: 'Activating Satellite Veronica in low-Earth orbit, Mr. Stark. Hulkbuster modular cage trajectory aligned for drop.',
+      action: 'open_veronica',
+      parameter: null,
+      tacticalAdvice: 'Atmospheric re-entry heat shield telemetry synchronized.',
+    };
+  }
+
+  if (p.includes('house party') || p.includes('drone') || p.includes('squadron') || p.includes('assemble suits') || p.includes('all armors')) {
+    return {
+      spokenResponse: 'House Party Protocol confirmed, Mr. Stark. All autonomous Mark armors airborne and converging on your coordinates.',
+      action: 'open_house_party',
+      parameter: null,
+      tacticalAdvice: 'Heartbreaker, Silver Centurion, Igor, and Shotgun airborne in perimeter formation.',
+    };
+  }
+
+  if (p.includes('jukebox') || p.includes('music') || p.includes('play rock') || p.includes('radio') || p.includes('atc') || p.includes('song') || p.includes('soundtrack')) {
+    return {
+      spokenResponse: 'Powering up the Stark Workshop Soundstage, Mr. Stark. AC/DC rock synthesizer and live ATC radio scanner online.',
+      action: 'open_jukebox',
+      parameter: null,
+      tacticalAdvice: 'Audioreactive equalizer and FAA airspace chatter unmuted.',
+    };
+  }
+
+  if (p.includes('smart home') || p.includes('lights') || p.includes('dim') || p.includes('blast door') || p.includes('iot') || p.includes('temperature') || p.includes('charging pad')) {
+    return {
+      spokenResponse: 'Stark Tower smart automation bridge connected, Mr. Stark. Ambient lighting, blast doors, and inductive chargers ready.',
+      action: 'open_smart_home',
+      parameter: null,
+      tacticalAdvice: 'Home Assistant / Philips Hue webhook integration active.',
+    };
+  }
+
+  if (p.includes('all suits') || p.includes('hall of armors') || p.includes('iron man suits') || p.includes('suit vault')) {
+    return {
+      spokenResponse: 'Opening the Stark Hall of Armors vault, Mr. Stark. All 24 canonical suits from Mark I through Mark LXXXV are online for inspection and equipping.',
+      action: 'open_all_suits',
+      parameter: null,
+      tacticalAdvice: 'Telemetry links synchronized with Mark 3, Mark 7, Mark 50, and Mark 85 chassis.',
+    };
+  }
+
+  if (p.includes('hulkbuster') || p.includes('hulk buster') || p.includes('jackhammer') || p.includes('titan armor')) {
+    return {
+      spokenResponse: 'Accessing Mark XLIV Hulkbuster Heavy Battlestation, Mr. Stark. Quad-core arc reactors engaged and pneumatic jackhammer fists pressurized.',
+      action: 'open_hulkbuster_station',
+      parameter: null,
+      tacticalAdvice: 'Veronica satellite orbital limb replacement dock on standby.',
+    };
+  }
+
+  if (p.includes('friday') || p.includes('ultron') || p.includes('edith') || p.includes('switch ai') || p.includes('ai persona') || p.includes('change ai')) {
+    return {
+      spokenResponse: 'Accessing Stark AI Neural Matrix, Mr. Stark. Ready to hot-swap between J.A.R.V.I.S., F.R.I.D.A.Y., U.L.T.R.O.N., and E.D.I.T.H.',
+      action: 'open_ai_persona',
+      parameter: null,
+      tacticalAdvice: 'Neural linguistic synthesis modules calibrated for all four artificial intelligences.',
+    };
+  }
+
+  if (p.includes('movie') || p.includes('movies') || p.includes('mcu') || p.includes('film') || p.includes('films') || p.includes('cinema')) {
+    return {
+      spokenResponse: 'Launching the MCU Iron Man Cinematic Theater, Mr. Stark. Archives of all nine films from 2008 to 2019 are cataloged with iconic quotes.',
+      action: 'open_mcu_movies',
+      parameter: null,
+      tacticalAdvice: '11-year Marvel Studios operational history and canonical suit debuts loaded.',
+    };
+  }
+
+  if (p.includes('snap') || p.includes('infinity stone') || p.includes('infinity stones') || p.includes('nano gauntlet')) {
+    return {
+      spokenResponse: 'Powering up the Nano Gauntlet Infinity housing, Mr. Stark. All six Infinity Stones stand socketed and ready for cosmic discharge.',
+      action: 'open_infinity_snap',
+      parameter: null,
+      tacticalAdvice: 'Gamma radiation conduits shielded. I am Iron Man.',
+    };
+  }
+
+  if (p.includes('dogfight') || p.includes('bogey') || p.includes('air combat') || p.includes('radar scope') || p.includes('flares')) {
+    return {
+      spokenResponse: 'Switching to 360-degree Dogfight Radar scope, Mr. Stark. Hostile bogeys acquired in the airspace sector.',
+      action: 'open_dogfight_radar',
+      parameter: null,
+      tacticalAdvice: 'Countermeasure flares loaded and micro-missile targeting systems hot.',
+    };
+  }
+
+  if (p.includes('paint') || p.includes('paint shop') || p.includes('custom paint') || p.includes('livery') || p.includes('colors')) {
+    return {
+      spokenResponse: 'Opening the Stark Armor Paint Shop, Mr. Stark. Robotic spray gantries and nanocoating palettes are online.',
+      action: 'open_paint_shop',
+      parameter: null,
+      tacticalAdvice: 'Specular shaders and dual-tone anodizing ready for application.',
+    };
+  }
+
+  if (p.includes('nanotech weapon') || p.includes('nanotech weapons') || p.includes('nano blade') || p.includes('lightning refocuser') || p.includes('plasma cannon') || p.includes('nano forge')) {
+    return {
+      spokenResponse: 'Opening the Nanotech Weapons Morphing Forge, Mr. Stark. RT-08 chest reservoir pressurized with 1,200,000 smart particles.',
+      action: 'open_nanotech_forge',
+      parameter: null,
+      tacticalAdvice: 'Energy blades, shield barriers, and Thor lightning refocusers ready to deploy.',
+    };
+  }
+
+  if (p.includes('threat map') || p.includes('global threat') || p.includes('orbital strike') || p.includes('satellite strike') || p.includes('hotspots')) {
+    return {
+      spokenResponse: 'Accessing the Stark Global Threat Map and Orbital Defense console, Mr. Stark. Satellite telemetry linked to Veronica-01.',
+      action: 'open_threat_map',
+      parameter: null,
+      tacticalAdvice: 'Kinetic particle strike and Iron Legion drone squadrons standing by.',
+    };
+  }
+
+  if (p.includes('whatsapp') || p.includes('avengers') || p.includes('chat') || p.includes('messages') || p.includes('comm-link') || p.includes('comms')) {
+    return {
+      spokenResponse: 'Opening the Stark Avengers Comm-Link terminal, Mr. Stark. Group channels and direct lines for Thor, Hulk, and Loki are online.',
+      action: 'open_avengers_comms',
+      parameter: null,
+      tacticalAdvice: 'All Avengers transponders synchronized with 4096-bit quantum encryption.',
+    };
+  }
+
+  if (p.includes('camera') || p.includes('surveillance') || p.includes('cctv') || p.includes('feed') || p.includes('helipad') || p.includes('security feed')) {
+    return {
+      spokenResponse: 'Switching tactical viewport to Stark Tower surveillance network, Mr. Stark. All six security sectors are live.',
+      action: 'open_cameras',
+      parameter: null,
+      tacticalAdvice: 'Thermal FLIR and perimeter radar online with automated motion tracking, Sir.',
+    };
+  }
+
+  if (p.includes('biometric') || p.includes('retina') || p.includes('fingerprint') || p.includes('palm') || p.includes('authenticate') || p.includes('lock suit') || p.includes('unlock')) {
+    return {
+      spokenResponse: 'Opening biometric clearance terminal, Mr. Stark. Ready for retina, palm, or voiceprint verification.',
+      action: 'open_biometrics',
+      parameter: null,
+      tacticalAdvice: 'Clearance Level Alpha-1 cryptographic keys ready for handshake, Sir.',
+    };
+  }
+
+  if (p.includes('part') || p.includes('suit') || p.includes('helmet') || p.includes('unibeam') || p.includes('thruster') || p.includes('boot') || p.includes('component')) {
+    return {
+      spokenResponse: 'Accessing full Mark armor component architecture, Mr. Stark. Cranial, thoracic, and repulsor diagnostics ready.',
+      action: 'open_suit_parts',
+      parameter: null,
+      tacticalAdvice: 'All eight primary armor modular segments synchronized, Sir.',
+    };
+  }
+
   if (p.includes('diagnostic') || p.includes('status') || p.includes('scan') || p.includes('check')) {
     return {
       spokenResponse: 'Running comprehensive diagnostic sweep across all gauntlet subsystems, Mr. Stark. Hull and arc core are nominal.',
@@ -209,6 +427,27 @@ Analyze Mr. Stark's request. Formulate:
    - "fetch_news": if he asks for news, headlines, or intelligence briefs.
    - "set_timer": if he asks to set a timer, reminder, or countdown.
    - "open_publishing": if he asks about publishing, packaging for Windows/Mac/Linux/Android, or app stores.
+   - "open_cameras": if he asks for Stark Tower cameras, CCTV, surveillance, or security feeds.
+   - "open_biometrics": if he asks for biometrics, retina scan, palm scan, locking, or unlocking the suit.
+   - "open_suit_parts": if he asks for full suit components, helmet HUD, unibeam, or boot thrusters.
+   - "call_avengers_group": if he asks to call the Avengers, group call, assemble the Avengers, or call everyone.
+   - "call_avenger": if he asks to call Thor, call Hulk / Bruce, or call Loki.
+   - "open_avengers_comms": if he asks for Avengers chat, WhatsApp, or comm-link.
+   - "open_hologram": if he asks to open hologram, show holographic display, 3D projection deck, or wireframe blueprints.
+   - "open_helmet_ar": if he asks for helmet vision, target lock, pilot vitals, or AR optics.
+   - "open_veronica": if he asks for Veronica, Hulkbuster, or orbital drop.
+   - "open_house_party": if he asks for House Party Protocol, drone suits, or assemble armors.
+   - "open_jukebox": if he asks for music, rock, jukebox, song, playlist, or ATC radio.
+   - "open_smart_home": if he asks for smart home, lights, dimming, blast doors, or IoT.
+   - "open_all_suits": if he asks for all suits, hall of armors, suit vault, or all marks.
+   - "open_hulkbuster_station": if he asks for Hulkbuster, Hulkbuster battlestation, or jackhammer punch.
+   - "open_ai_persona": if he asks for Friday, Ultron, Edith, or switching AI persona.
+   - "open_mcu_movies": if he asks for Iron Man movies, MCU films, or cinema theater.
+   - "open_infinity_snap": if he asks for the snap, infinity stones, or nano gauntlet snap.
+   - "open_dogfight_radar": if he asks for dogfight radar, bogeys, air combat, or flares.
+   - "open_paint_shop": if he asks for paint shop, custom colors, livery, or suit painting.
+   - "open_nanotech_forge": if he asks for nanotech weapons, nano forge, energy blade, or lightning refocuser.
+   - "open_threat_map": if he asks for global threat map, orbital defense, or orbital strike.
    - "none": for general conversation or inquiry.
 3. "parameter": Value associated with the action (e.g., number 0-100 for charge/power, seconds for timer, location name for weather, protocol name like 'COMBAT', mark name like 'MK-50', or null).
 4. "tacticalAdvice": A short 1-line tactical or engineering observation.`;
@@ -338,6 +577,125 @@ app.get('/api/weather', async (req, res) => {
   }
 });
 
+// Avengers In-Character Comms / Chat API
+app.post('/api/avengers/chat', async (req, res) => {
+  const { characterId, message, isGroup } = req.body;
+  const userText = message || 'Hello team';
+
+  // Fallback responses in case AI is offline or rate-limited
+  const characterFallbacks: Record<string, string[]> = {
+    thor: [
+      `Greetings, Man of Iron! Tell me, does a feast follow this summons, or shall I call forth the storm and thunder once more?`,
+      `Ha! Well spoken, Stark! Stormbreaker is ever eager for glorious battle. Let our foes tremble before the lightning!`,
+      `Fear not, Tony! Though Loki tests my patience daily, the sons of Odin shall always fight by your side.`,
+      `By the beard of Odin, your flying metal chariot never ceases to amuse me! Point me to whatever needs smashing!`,
+    ],
+    hulk: [
+      `Tony, hey. Give me a second, I was in the middle of a gamma spectrography run. What's the situation?`,
+      `Pulse is at 98 BPM, totally under control. Unless you need the big guy? Because he's getting restless.`,
+      `HULK READY! ...Sorry, that was the vocal synthesis acting up. Yeah, I'm here. Send over the coordinates.`,
+      `Just checked the energy readings on your Arc Reactor from the Compound. Running hot, Tony. Don't push it.`,
+    ],
+    loki: [
+      `Must you persistently disturb me, Stark? I was in the middle of orchestrating rather exquisite mischief.`,
+      `Ah, the mortal in the tin can speaks. Do tell, is this another one of your little worldly crises, or did Thor break another toaster?`,
+      `I assure you, Stark, if I wished to overthrow Midgard today, you would have noticed the dramatic lighting by now.`,
+      `You possess such fascinating toys, Anthony. When this is over, do let me borrow one of your nanotech suits. Strictly for scientific curiosity.`,
+    ],
+    cap: [
+      `Stark, report. I'm en route from the Brooklyn precinct. What are we facing?`,
+      `Keep the perimeter secure and civilians clear. And Tony... watch the collateral damage this time.`,
+      `We work as a team, Tony. Thor, Bruce, get in formation. Avengers, sound off!`,
+    ],
+    spiderman: [
+      `Mr. Stark!! Hey! Sorry, I was swinging through Queens and almost dropped my backpack! What's up?! Can I try the parachute upgrade?!`,
+      `Whoa, are Mr. Thor and Loki on the line too?! Tell them I said hi! Oh man, this is so cool.`,
+    ],
+  };
+
+  if (ai) {
+    try {
+      let promptText = '';
+      if (isGroup) {
+        promptText = `You are roleplaying as the Avengers in their private tactical WhatsApp group called "Avengers Initiative: Assembly".
+Tony Stark just posted: "${userText}".
+Write short in-character responses from 2 or 3 of the following characters:
+- Thor (God of Thunder, calls Tony "Man of Iron" or "Stark", boisterous, thunderous, mentions mead/lightning/battles)
+- Bruce Banner / Hulk (Dr. Banner or Smart Hulk, calm scientist with gamma humor)
+- Loki (God of Mischief, snarky, witty, dramatic, brotherly rivalry with Thor)
+- Captain America / Steve Rogers (disciplined leader, tactician)
+Format as JSON array with objects containing { "senderId": "thor"|"hulk"|"loki"|"cap", "senderName": string, "text": string }.`;
+      } else {
+        const charName = characterId === 'thor' ? 'Thor Odinson' : characterId === 'hulk' ? 'Dr. Bruce Banner (Hulk)' : characterId === 'loki' ? 'Loki Laufeyson' : characterId;
+        promptText = `You are roleplaying as ${charName} in a 1-on-1 private WhatsApp comms call with Tony Stark (Iron Man).
+Tony Stark just messaged: "${userText}".
+Reply in character in 1-2 authentic, witty lines matching your Marvel personality.
+Output strictly JSON: { "senderId": "${characterId}", "senderName": "${charName}", "text": string }`;
+      }
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: promptText,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.85,
+        },
+      });
+
+      const parsed = JSON.parse(response.text?.trim() || '{}');
+      if (isGroup && Array.isArray(parsed)) {
+        return res.json({ messages: parsed });
+      } else if (parsed.text) {
+        return res.json({ messages: [parsed] });
+      }
+    } catch (err) {
+      console.warn('Gemini Avengers chat fallback triggered:', err);
+    }
+  }
+
+  // Fallback generation
+  if (isGroup) {
+    const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    const messages = [
+      {
+        senderId: 'thor',
+        senderName: 'Thor Odinson',
+        text: pickRandom(characterFallbacks.thor),
+      },
+      {
+        senderId: 'hulk',
+        senderName: 'Dr. Bruce Banner',
+        text: pickRandom(characterFallbacks.hulk),
+      },
+      {
+        senderId: 'loki',
+        senderName: 'Loki Laufeyson',
+        text: pickRandom(characterFallbacks.loki),
+      },
+    ];
+    return res.json({ messages });
+  } else {
+    const list = characterFallbacks[characterId] || characterFallbacks.thor;
+    const reply = list[Math.floor(Math.random() * list.length)];
+    const nameMap: Record<string, string> = {
+      thor: 'Thor Odinson',
+      hulk: 'Dr. Bruce Banner',
+      loki: 'Loki Laufeyson',
+      cap: 'Captain America',
+      spiderman: 'Peter Parker',
+    };
+    return res.json({
+      messages: [
+        {
+          senderId: characterId,
+          senderName: nameMap[characterId] || 'Avenger',
+          text: reply,
+        },
+      ],
+    });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({
@@ -346,6 +704,111 @@ app.get('/api/health', (req, res) => {
     starkUplink: !!ai,
     pilot: 'Tony Stark',
     timestamp: new Date().toISOString(),
+  });
+});
+
+// Real-Time WebRTC Comm-Bridge for calling actual friends
+interface CommPeer {
+  ws: WebSocket;
+  peerId: string;
+  userName: string;
+  roomId: string;
+}
+
+const commRooms = new Map<string, Map<string, CommPeer>>();
+
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server, path: '/ws/comm-bridge' });
+
+wss.on('connection', (ws) => {
+  let currentPeerId = '';
+  let currentRoomId = '';
+
+  ws.on('message', (raw) => {
+    try {
+      const data = JSON.parse(raw.toString());
+      if (data.type === 'join') {
+        currentPeerId = data.peerId;
+        currentRoomId = data.roomId;
+        if (!commRooms.has(currentRoomId)) {
+          commRooms.set(currentRoomId, new Map());
+        }
+        const room = commRooms.get(currentRoomId)!;
+        const newPeer: CommPeer = {
+          ws,
+          peerId: currentPeerId,
+          userName: data.userName || 'Stark Operator',
+          roomId: currentRoomId,
+        };
+        room.set(currentPeerId, newPeer);
+
+        // Notify existing peers
+        const peerList = Array.from(room.values()).map((p) => ({
+          peerId: p.peerId,
+          userName: p.userName,
+        }));
+
+        ws.send(
+          JSON.stringify({
+            type: 'room-state',
+            peers: peerList.filter((p) => p.peerId !== currentPeerId),
+          })
+        );
+
+        room.forEach((peer) => {
+          if (peer.peerId !== currentPeerId && peer.ws.readyState === WebSocket.OPEN) {
+            peer.ws.send(
+              JSON.stringify({
+                type: 'peer-joined',
+                peerId: currentPeerId,
+                userName: newPeer.userName,
+              })
+            );
+          }
+        });
+      } else if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice-candidate') {
+        const room = commRooms.get(currentRoomId);
+        if (room) {
+          const target = room.get(data.targetPeerId);
+          if (target && target.ws.readyState === WebSocket.OPEN) {
+            target.ws.send(JSON.stringify(data));
+          }
+        }
+      } else if (data.type === 'chat' || data.type === 'suit-telemetry') {
+        const room = commRooms.get(currentRoomId);
+        if (room) {
+          room.forEach((peer) => {
+            if (peer.peerId !== currentPeerId && peer.ws.readyState === WebSocket.OPEN) {
+              peer.ws.send(JSON.stringify(data));
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Comm bridge WS parse error:', e);
+    }
+  });
+
+  ws.on('close', () => {
+    if (currentRoomId && currentPeerId) {
+      const room = commRooms.get(currentRoomId);
+      if (room) {
+        room.delete(currentPeerId);
+        room.forEach((peer) => {
+          if (peer.ws.readyState === WebSocket.OPEN) {
+            peer.ws.send(
+              JSON.stringify({
+                type: 'peer-left',
+                peerId: currentPeerId,
+              })
+            );
+          }
+        });
+        if (room.size === 0) {
+          commRooms.delete(currentRoomId);
+        }
+      }
+    }
   });
 });
 
@@ -364,7 +827,7 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`[STARK INDUSTRIES] J.A.R.V.I.S. Core listening on port ${PORT} for Tony Stark`);
   });
 }
