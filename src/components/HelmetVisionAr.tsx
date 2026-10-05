@@ -146,24 +146,47 @@ export const HelmetVisionAr: React.FC = () => {
           </div>
         </div>
 
-        {/* Vision Mode Selectors */}
-        <div className="flex items-center gap-1.5 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
-          {(['TACTICAL_SCAN', 'THERMAL', 'NIGHT_VISION', 'STANDARD'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => {
-                soundFx.playHudBeep('mode');
-                setVisionMode(mode);
-              }}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-mono-tech font-bold cursor-pointer transition-all ${
-                visionMode === mode
-                  ? 'bg-cyan-600 text-gray-950 font-extrabold shadow-[0_0_12px_rgba(6,182,212,0.6)]'
-                  : 'text-gray-400 hover:text-cyan-200'
-              }`}
-            >
-              {mode.replace('_', ' ')}
-            </button>
-          ))}
+        {/* Controls: Request Camera Button + Vision Mode Selectors */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Prominent Camera Request / Toggle Button */}
+          <button
+            onClick={() => {
+              if (hasCamera) {
+                stopCamera();
+                addToast({ title: 'Camera Disengaged', message: 'Switched to synthetic optical simulation.', type: 'protocol' });
+              } else {
+                startCamera();
+              }
+            }}
+            className={`px-3 py-1.5 rounded-xl font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
+              hasCamera
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                : 'bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-gray-950 shadow-[0_0_15px_rgba(6,182,212,0.6)] animate-pulse'
+            }`}
+          >
+            {hasCamera ? <VideoOff className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
+            <span>{hasCamera ? 'DISENGAGE LIVE CAMERA' : 'REQUEST CAMERA ACCESS'}</span>
+          </button>
+
+          {/* Vision Mode Selectors */}
+          <div className="flex items-center gap-1.5 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
+            {(['TACTICAL_SCAN', 'THERMAL', 'NIGHT_VISION', 'STANDARD'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => {
+                  soundFx.playHudBeep('mode');
+                  setVisionMode(mode);
+                }}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-mono-tech font-bold cursor-pointer transition-all ${
+                  visionMode === mode
+                    ? 'bg-cyan-600 text-gray-950 font-extrabold shadow-[0_0_12px_rgba(6,182,212,0.6)]'
+                    : 'text-gray-400 hover:text-cyan-200'
+                }`}
+              >
+                {mode.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -198,20 +221,35 @@ export const HelmetVisionAr: React.FC = () => {
 
           {/* Fallback Simulation Hologram if camera unavailable */}
           {!hasCamera && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gray-950/80">
-              <Camera className="w-12 h-12 text-cyan-400 mb-3 animate-pulse" />
-              <h4 className="font-tech text-sm font-bold text-cyan-200 uppercase">
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gray-950/85 z-20 pointer-events-auto"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-cyan-950/90 border-2 border-cyan-400 flex items-center justify-center mb-3 shadow-[0_0_25px_rgba(6,182,212,0.6)]">
+                <Camera className="w-8 h-8 text-cyan-300 animate-pulse" />
+              </div>
+              <h4 className="font-tech text-base font-bold text-cyan-200 uppercase tracking-wider">
                 OPTICAL SENSORS IN SYNTHETIC MODE
               </h4>
-              <p className="text-xs text-gray-400 font-sans max-w-sm mt-1">
-                {cameraError || 'Camera stream disabled. Simulating target tracking optics and biometric telemetry.'}
+              <p className="text-xs text-gray-300 font-sans max-w-sm mt-1.5 leading-relaxed">
+                {cameraError || 'Live webcam stream is currently offline. Click below to grant browser camera permissions for real-time facial HUD tracking.'}
               </p>
+              
               <button
-                onClick={startCamera}
-                className="mt-3 px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-gray-950 font-tech font-bold text-xs cursor-pointer shadow-md"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startCamera();
+                }}
+                className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-gray-950 font-tech font-extrabold text-xs cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.7)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
               >
-                REQUEST CAMERA ACCESS
+                <Camera className="w-4 h-4" />
+                <span>REQUEST CAMERA ACCESS (CLICK HERE)</span>
               </button>
+
+              <span className="text-[10px] text-gray-400 font-mono mt-2">
+                🔒 If prompted by your browser, click "Allow" on the top-left address bar.
+              </span>
             </div>
           )}
 

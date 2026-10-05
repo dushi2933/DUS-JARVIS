@@ -38,7 +38,11 @@ import {
   Palette,
   Target,
   Sword,
-  MapPin
+  MapPin,
+  Laptop,
+  TrendingUp,
+  DollarSign,
+  Building2
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { CockpitHudView } from './components/CockpitHudView';
@@ -73,6 +77,10 @@ import { DogfightRadarSimulator } from './components/DogfightRadarSimulator';
 import { StarkArmorPaintShop } from './components/StarkArmorPaintShop';
 import { NanotechWeaponsForge } from './components/NanotechWeaponsForge';
 import { GlobalThreatIntelGlobe } from './components/GlobalThreatIntelGlobe';
+import { StarkLaptopNativeBridge } from './components/StarkLaptopNativeBridge';
+import { StarkVirtualLaptop } from './components/StarkVirtualLaptop';
+import { StarkInvestmentsPortal } from './components/StarkInvestmentsPortal';
+import { StarkFinancialBridge } from './components/StarkFinancialBridge';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { 
@@ -92,6 +100,10 @@ function MainAppContent() {
 
   const [activeTab, setActiveTab] = useState<
     | 'cockpit'
+    | 'investments'
+    | 'financialBridge'
+    | 'virtualLaptop'
+    | 'laptopBridge'
     | 'nanoForge'
     | 'threatMap'
     | 'infinitySnap'
@@ -121,6 +133,8 @@ function MainAppContent() {
   >(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
+      if (p.get('portal') === 'bridge' || p.get('bridge')) return 'financialBridge';
+      if (p.get('portal') === 'invest' || p.get('invest') || window.location.search.includes('invest')) return 'investments';
       if (p.get('freq') || p.get('room')) return 'friendCalls';
     }
     return 'cockpit';
@@ -367,13 +381,27 @@ function MainAppContent() {
       case 'open_ai_persona':
       case 'switch_ai':
       case 'friday':
-      case 'ultron': {
+      case 'ultron':
+      case 'edith':
+      case 'jarvis': {
         soundFx.playHudBeep('mode');
+        const p = typeof parameter === 'string' ? parameter.toUpperCase() : '';
+        if (['JARVIS', 'FRIDAY', 'ULTRON', 'EDITH'].includes(p)) {
+          jarvisVoice.setPersona(p as any);
+        } else if (action === 'friday') {
+          jarvisVoice.setPersona('FRIDAY');
+        } else if (action === 'ultron') {
+          jarvisVoice.setPersona('ULTRON');
+        } else if (action === 'edith') {
+          jarvisVoice.setPersona('EDITH');
+        } else if (action === 'jarvis') {
+          jarvisVoice.setPersona('JARVIS');
+        }
         setActiveTab('aiPersona');
         addToast({
-          title: 'AI Neural Matrix Online',
-          message: 'J.A.R.V.I.S., F.R.I.D.A.Y., U.L.T.R.O.N., and E.D.I.T.H. ready.',
-          type: 'status',
+          title: `${jarvisVoice.getPersona()} Active`,
+          message: 'AI Neural Matrix synchronized across gauntlet systems.',
+          type: jarvisVoice.getPersona() === 'ULTRON' ? 'alert' : 'status',
         });
         break;
       }
@@ -422,6 +450,34 @@ function MainAppContent() {
         addToast({
           title: 'Stark Armor Paint Shop Online',
           message: 'Nanocoating studio and dual-tone palette calibrated.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_virtual_laptop':
+      case 'touchscreen_laptop':
+      case 'fake_laptop':
+      case 'stark_laptop': {
+        soundFx.playArcReactorPulse();
+        setActiveTab('virtualLaptop');
+        addToast({
+          title: 'Tony Stark Touchscreen Laptop Online',
+          message: 'Holographic touch display, virtual chiclet keyboard, and multi-window desktop engaged.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_laptop_bridge':
+      case 'access_laptop':
+      case 'laptop_access':
+      case 'laptop_uplink': {
+        soundFx.playHudBeep('mode');
+        setActiveTab('laptopBridge');
+        addToast({
+          title: 'Laptop OS Uplink Online',
+          message: 'Local hardware diagnostics, file system access, and screen surveillance ready.',
           type: 'protocol',
         });
         break;
@@ -865,10 +921,52 @@ function MainAppContent() {
           onToggleWakeWord={handleToggleWakeWord}
         />
 
-        {/* Navigation Tabs (27 Operational Centers) */}
+        {/* Stark Investments Seed Capital Quick Banner */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gradient-to-r from-amber-950/70 via-gray-900 to-slate-900 border border-amber-500/50 rounded-2xl shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/60 flex items-center justify-center text-amber-400 shrink-0 shadow">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-amber-300">
+                  STARK INVESTMENTS // SEED CAPITAL ROUND IS OPEN
+                </span>
+                <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono font-bold">
+                  MVP VERIFIED
+                </span>
+              </div>
+              <p className="text-xs text-gray-300 hidden sm:block">
+                Back our App Store & Google Play launch ($150 target) in exchange for direct company equity & royalties.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => {
+                soundFx.playHudBeep('mode');
+                setActiveTab(activeTab === 'investments' ? 'cockpit' : 'investments');
+              }}
+              className={`px-4 py-2 rounded-xl font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow transition-all ${
+                activeTab === 'investments'
+                  ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
+                  : 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-gray-950 shadow-[0_0_15px_rgba(245,158,11,0.5)]'
+              }`}
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>{activeTab === 'investments' ? 'RETURN TO COCKPIT' : 'OPEN STARK INVESTMENTS PORTAL'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs (31 Operational Centers) */}
         <div className="flex items-center gap-1.5 p-1 bg-gray-900/90 border border-cyan-500/20 rounded-xl overflow-x-auto">
           {[
+            { id: 'investments', label: 'Stark Investments Portal', icon: <TrendingUp className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
+            { id: 'financialBridge', label: 'Stark Financial Bridge (Vault & 2FA)', icon: <Building2 className="w-3.5 h-3.5 text-emerald-400" /> },
             { id: 'cockpit', label: 'Cockpit Wireframe HUD', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+            { id: 'virtualLaptop', label: 'Tony Stark Touchscreen Laptop', icon: <Laptop className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
+            { id: 'laptopBridge', label: 'Laptop OS Uplink', icon: <Laptop className="w-3.5 h-3.5 text-cyan-300" /> },
             { id: 'nanoForge', label: 'Nanotech Weapons Forge', icon: <Sword className="w-3.5 h-3.5 text-cyan-400 animate-pulse" /> },
             { id: 'threatMap', label: 'Global Threat Map', icon: <MapPin className="w-3.5 h-3.5 text-red-400" /> },
             { id: 'infinitySnap', label: 'Nano Gauntlet Snap', icon: <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" /> },
@@ -917,6 +1015,34 @@ function MainAppContent() {
           })}
         </div>
 
+        {/* Tab 0: Stark Investments & Angel Backer Syndicate Portal */}
+        {activeTab === 'investments' && (
+          <StarkInvestmentsPortal
+            onLaunchLiveApp={() => {
+              soundFx.playHudBeep('mode');
+              setActiveTab('cockpit');
+            }}
+            onOpenVirtualLaptop={() => {
+              soundFx.playHudBeep('mode');
+              setActiveTab('virtualLaptop');
+            }}
+            onOpenFinancialBridge={() => {
+              soundFx.playHudBeep('mode');
+              setActiveTab('financialBridge');
+            }}
+          />
+        )}
+
+        {/* Tab 0b: Stark Financial Bridge (Encrypted Vault & Biometric 2FA Withdrawals) */}
+        {activeTab === 'financialBridge' && (
+          <StarkFinancialBridge
+            onBackToInvestments={() => {
+              soundFx.playHudBeep('mode');
+              setActiveTab('investments');
+            }}
+          />
+        )}
+
         {/* Tab 1: Cockpit HUD (Top Banner + Center Orb + Left 6 Bars + Right 6 Bars) */}
         {activeTab === 'cockpit' && (
           <CockpitHudView
@@ -950,6 +1076,16 @@ function MainAppContent() {
             isProcessing={isProcessing}
             setIsProcessing={setIsProcessing}
           />
+        )}
+
+        {/* Tab: Tony Stark Virtual Touchscreen Laptop */}
+        {activeTab === 'virtualLaptop' && (
+          <StarkVirtualLaptop />
+        )}
+
+        {/* Tab: Stark Laptop OS Uplink & Native Access Bridge */}
+        {activeTab === 'laptopBridge' && (
+          <StarkLaptopNativeBridge />
         )}
 
         {/* Tab: Nanotech Weapons Morphing Forge */}

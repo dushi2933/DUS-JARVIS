@@ -2,7 +2,8 @@
   "name": "J.A.R.V.I.S. Iron Man Gauntlet OS",
   "description": "Stark Industries holographic J.A.R.V.I.S. operating system and Iron Man Gauntlet diagnostic, calibration, and multi-platform tactical command suite for Mr. Tony Stark.",
   "requestFramePermissions": [
-    "microphone"
+    "microphone",
+    "camera"
   ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

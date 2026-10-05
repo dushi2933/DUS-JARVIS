@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bot, 
   Cpu, 
@@ -39,6 +39,12 @@ export const AiPersonaMatrix: React.FC = () => {
   const { addToast } = useToast();
   const [activePersona, setActivePersona] = useState<AiPersona>(() => jarvisVoice.getPersona());
   const [isTestingVoice, setIsTestingVoice] = useState<boolean>(false);
+
+  useEffect(() => {
+    return jarvisVoice.addPersonaListener((p) => {
+      setActivePersona(p);
+    });
+  }, []);
 
   const personas: PersonaData[] = [
     {

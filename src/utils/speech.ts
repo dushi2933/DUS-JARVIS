@@ -15,6 +15,7 @@ export class JarvisSpeechEngine {
   private synth: SpeechSynthesis | null = null;
   private voice: SpeechSynthesisVoice | null = null;
   private currentPersona: AiPersona = 'JARVIS';
+  private personaListeners: Array<(persona: AiPersona) => void> = [];
   private recognition: any = null;
   private isListening: boolean = false;
   private isSpeaking: boolean = false;
@@ -30,9 +31,23 @@ export class JarvisSpeechEngine {
     }
   }
 
+  public addPersonaListener(listener: (persona: AiPersona) => void): () => void {
+    this.personaListeners.push(listener);
+    return () => {
+      this.personaListeners = this.personaListeners.filter((l) => l !== listener);
+    };
+  }
+
   public setPersona(persona: AiPersona) {
     this.currentPersona = persona;
     this.initVoice();
+    this.personaListeners.forEach((fn) => {
+      try {
+        fn(persona);
+      } catch (err) {
+        console.warn('Persona listener error:', err);
+      }
+    });
   }
 
   public getPersona(): AiPersona {

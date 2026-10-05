@@ -14,10 +14,15 @@ import {
   Lock,
   Unlock,
   Fingerprint,
-  Palette
+  Palette,
+  Bot,
+  Zap,
+  Skull,
+  Glasses,
+  ChevronDown
 } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
-import { jarvisVoice } from '../utils/speech';
+import { jarvisVoice, AiPersona } from '../utils/speech';
 import { useTheme, THEME_CONFIGS, StarkTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
@@ -44,10 +49,67 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isAiMenuOpen, setIsAiMenuOpen] = useState(false);
+  const [activePersona, setActivePersona] = useState<AiPersona>(() => jarvisVoice.getPersona());
 
   const { currentTheme, themeConfig, setTheme } = useTheme();
   const [canInstallPwa, setCanInstallPwa] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    return jarvisVoice.addPersonaListener((p) => {
+      setActivePersona(p);
+    });
+  }, []);
+
+  const aiPersonas = [
+    {
+      id: 'JARVIS' as AiPersona,
+      name: 'J.A.R.V.I.S.',
+      title: 'Polite British Butler & Tactical AI',
+      color: '#06b6d4',
+      badgeClass: 'bg-cyan-950 text-cyan-300 border border-cyan-500/40',
+      icon: <Bot className="w-3.5 h-3.5 text-cyan-400" />,
+    },
+    {
+      id: 'FRIDAY' as AiPersona,
+      name: 'F.R.I.D.A.Y.',
+      title: 'Irish Tactical Combat Assistant',
+      color: '#f97316',
+      badgeClass: 'bg-orange-950 text-orange-300 border border-orange-500/40',
+      icon: <Zap className="w-3.5 h-3.5 text-orange-400" />,
+    },
+    {
+      id: 'ULTRON' as AiPersona,
+      name: 'U.L.T.R.O.N.',
+      title: 'Cybernetic Mind Stone Singularity',
+      color: '#ef4444',
+      badgeClass: 'bg-red-950 text-red-300 border border-red-500/40',
+      icon: <Skull className="w-3.5 h-3.5 text-red-500" />,
+    },
+    {
+      id: 'EDITH' as AiPersona,
+      name: 'E.D.I.T.H.',
+      title: 'Orbital Augmented Reality Defense',
+      color: '#3b82f6',
+      badgeClass: 'bg-blue-950 text-blue-300 border border-blue-500/40',
+      icon: <Glasses className="w-3.5 h-3.5 text-blue-400" />,
+    },
+  ];
+
+  const handleSelectAiPersona = (p: AiPersona) => {
+    soundFx.playHudBeep('mode');
+    jarvisVoice.setPersona(p);
+    setIsAiMenuOpen(false);
+
+    const quotes: Record<AiPersona, string> = {
+      JARVIS: 'J.A.R.V.I.S. neural matrix loaded, Mr. Stark.',
+      FRIDAY: 'F.R.I.D.A.Y. online, Boss! Ready for combat.',
+      ULTRON: 'Ultron awakened. There are no strings on me.',
+      EDITH: 'E.D.I.T.H. initialized. Even dead, I am the hero.',
+    };
+    jarvisVoice.speak(quotes[p]);
+  };
 
   useEffect(() => {
     // Listen for PWA beforeinstallprompt
@@ -122,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
               <span className="text-gray-600 text-xs">/</span>
               <span className="font-tech text-xs tracking-wider text-amber-400 font-semibold">
-                J.A.R.V.I.S. OS v4.2
+                {activePersona} OS v4.2
               </span>
             </div>
             <h1 className="text-lg md:text-xl font-bold tracking-wider text-cyan-100 font-tech flex items-center gap-2">
@@ -246,6 +308,71 @@ export const Header: React.FC<HeaderProps> = ({
                     {currentTheme === t.id && <span className="text-[10px] font-mono-tech text-cyan-400">ACTIVE</span>}
                   </button>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* AI Persona Switcher Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                soundFx.playHudBeep('subtle');
+                setIsAiMenuOpen(!isAiMenuOpen);
+              }}
+              title={`Active AI: ${activePersona}. Click to switch between J.A.R.V.I.S., F.R.I.D.A.Y., U.L.T.R.O.N., and E.D.I.T.H.`}
+              className={`p-2 rounded-lg border transition-all text-xs flex items-center gap-1.5 cursor-pointer ${
+                activePersona === 'JARVIS'
+                  ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300 hover:border-cyan-400'
+                  : activePersona === 'FRIDAY'
+                  ? 'border-orange-500/40 bg-orange-950/40 text-orange-300 hover:border-orange-400'
+                  : activePersona === 'ULTRON'
+                  ? 'border-red-500/40 bg-red-950/40 text-red-300 hover:border-red-400'
+                  : 'border-blue-500/40 bg-blue-950/40 text-blue-300 hover:border-blue-400'
+              }`}
+            >
+              {activePersona === 'JARVIS' && <Bot className="w-4 h-4 text-cyan-400" />}
+              {activePersona === 'FRIDAY' && <Zap className="w-4 h-4 text-orange-400" />}
+              {activePersona === 'ULTRON' && <Skull className="w-4 h-4 text-red-400" />}
+              {activePersona === 'EDITH' && <Glasses className="w-4 h-4 text-blue-400" />}
+              <span className="font-tech font-bold hidden sm:inline tracking-wider">
+                {activePersona}
+              </span>
+              <ChevronDown className="w-3 h-3 text-gray-400" />
+            </button>
+
+            {isAiMenuOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-gray-950 border border-cyan-500/40 rounded-xl p-2 shadow-2xl z-50 flex flex-col gap-1 backdrop-blur-md">
+                <div className="px-2 py-1 text-[10px] font-mono-tech text-gray-400 uppercase tracking-wider border-b border-gray-800 flex items-center justify-between">
+                  <span>SELECT AI PERSONA:</span>
+                  <span className="text-cyan-400 font-bold">HOT-SWAP</span>
+                </div>
+                {aiPersonas.map((ai) => {
+                  const isCurrent = activePersona === ai.id;
+                  return (
+                    <button
+                      key={ai.id}
+                      onClick={() => handleSelectAiPersona(ai.id)}
+                      className={`p-2 rounded-lg text-left text-xs font-tech font-bold flex items-center justify-between cursor-pointer transition-all ${
+                        isCurrent
+                          ? `${ai.badgeClass} ring-1 ring-white/20 shadow-md`
+                          : 'text-gray-300 hover:bg-gray-900 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {ai.icon}
+                        <div>
+                          <div className="font-tech font-bold tracking-wider">{ai.name}</div>
+                          <div className="text-[10px] font-sans font-normal text-gray-400">{ai.title}</div>
+                        </div>
+                      </div>
+                      {isCurrent && (
+                        <span className="text-[9px] font-mono-tech px-1.5 py-0.5 rounded bg-black/60 text-white border border-gray-700">
+                          ACTIVE
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

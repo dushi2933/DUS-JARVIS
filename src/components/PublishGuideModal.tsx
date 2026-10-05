@@ -13,6 +13,7 @@ import {
   Printer
 } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
+import { useToast } from '../context/ToastContext';
 
 interface PublishGuideModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { addToast } = useToast();
   if (!isOpen) return null;
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -30,7 +32,11 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
   const copyUrl = () => {
     soundFx.playHudBeep('confirm');
     navigator.clipboard.writeText(currentUrl);
-    alert('J.A.R.V.I.S. Gauntlet URL copied to clipboard! You can share this link with anyone.');
+    addToast({
+      title: 'Link Copied',
+      message: 'J.A.R.V.I.S. Gauntlet URL copied to clipboard! You can share this link with anyone.',
+      type: 'protocol'
+    });
   };
 
   return (

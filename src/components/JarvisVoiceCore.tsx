@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Send, Sparkles, Volume2, Radio, Terminal, Bot, Zap, ShieldAlert } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
 import { jarvisVoice } from '../utils/speech';
+import { useToast } from '../context/ToastContext';
 import { JarvisDialogue, GauntletState } from '../types/gauntlet';
 
 interface JarvisVoiceCoreProps {
@@ -17,6 +18,7 @@ export const JarvisVoiceCore: React.FC<JarvisVoiceCoreProps> = ({
   isProcessing,
   setIsProcessing,
 }) => {
+  const { addToast } = useToast();
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -67,7 +69,11 @@ export const JarvisVoiceCore: React.FC<JarvisVoiceCoreProps> = ({
         setIsListening(true);
       } else {
         // Fallback prompt
-        alert('Microphone speech recognition is not supported or was blocked. You can type commands in the Stark console below!');
+        addToast({
+          title: 'Speech Recognition Unavailable',
+          message: 'Microphone speech recognition is not supported or was blocked. You can type commands in the Stark console below!',
+          type: 'alert'
+        });
       }
     }
   };

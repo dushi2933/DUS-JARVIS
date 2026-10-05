@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Zap, 
   Flame, 
@@ -19,12 +19,16 @@ import {
   Bell, 
   CloudSun, 
   Cpu,
-  Bot
+  Bot,
+  Skull,
+  Glasses
 } from 'lucide-react';
 import { GauntletState, MarkProfile, JarvisDialogue } from '../types/gauntlet';
 import { soundFx } from '../utils/audioEffects';
-import { jarvisVoice } from '../utils/speech';
+import { jarvisVoice, AiPersona } from '../utils/speech';
+import { useToast } from '../context/ToastContext';
 import { FlightTelemetryWidget } from './FlightTelemetryWidget';
+import { SuitComponentBatteryIndicators } from './SuitComponentBatteryIndicators';
 
 interface CockpitHudViewProps {
   gauntletState: GauntletState;
@@ -55,11 +59,34 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
   isProcessing,
   setIsProcessing,
 }) => {
+  const { addToast } = useToast();
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [activePersona, setActivePersona] = useState<AiPersona>(() => jarvisVoice.getPersona());
   const [latestJarvisSpeech, setLatestJarvisSpeech] = useState<string>(
     'Systems online, Mr. Stark. Central Arc Core and all flank telemetry arrays stand synchronized at your command, Sir.'
   );
+
+  useEffect(() => {
+    return jarvisVoice.addPersonaListener((p) => {
+      setActivePersona(p);
+    });
+  }, []);
+
+  const handleSelectPersona = (p: AiPersona) => {
+    soundFx.playHudBeep('mode');
+    jarvisVoice.setPersona(p);
+
+    const quotes: Record<AiPersona, string> = {
+      JARVIS: 'J.A.R.V.I.S. neural matrix loaded, Mr. Stark. Ready for laboratory directives.',
+      FRIDAY: 'F.R.I.D.A.Y. online, Boss! Ready for combat.',
+      ULTRON: 'Ultron awakened. There are no strings on me.',
+      EDITH: 'E.D.I.T.H. initialized. Even dead, I am the hero.',
+    };
+    const quote = quotes[p];
+    setLatestJarvisSpeech(quote);
+    jarvisVoice.speak(quote);
+  };
 
   const toggleListen = () => {
     if (isListening) {
@@ -71,7 +98,11 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
       if (started) {
         setIsListening(true);
       } else {
-        alert('Microphone input is currently unavailable in this browser context. You can type commands below!');
+        addToast({
+          title: 'Microphone Restricted',
+          message: 'Microphone input is unavailable or blocked in this browser context. You can type commands in the Stark console below!',
+          type: 'alert'
+        });
       }
     }
   };
@@ -120,6 +151,15 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-4 relative">
+      {/* Series of small, circular battery life percentage indicators for each suit component */}
+      <SuitComponentBatteryIndicators
+        repulsorCharge={gauntletState.repulsorCharge}
+        armorIntegrity={gauntletState.armorIntegrity}
+        flightStabilizersPower={gauntletState.powerRouting.flightStabilizers}
+        arcReactorOutputGW={gauntletState.arcReactorOutputGW}
+        onRechargeRepulsor={() => onChargeRepulsor(100)}
+      />
+
       {/* 3-Column Symmetrical Cockpit Grid based on Sirly Sarah's wireframe diagram */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
@@ -159,7 +199,7 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Directive for Jarvis..."
+                placeholder={`Directive for ${activePersona}...`}
                 className="flex-1 bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-xs text-cyan-100 font-mono-tech focus:outline-none focus:border-cyan-400"
               />
               <button
@@ -170,6 +210,39 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
                 <Send className="w-3 h-3" />
               </button>
             </form>
+
+            {/* AI Persona Quick-Switch Bar */}
+            <div className="mt-2 pt-2 border-t border-gray-800">
+              <div className="flex items-center justify-between text-[10px] font-mono-tech text-gray-400 mb-1">
+                <span>ACTIVE AI PERSONA:</span>
+                <span className="text-cyan-400 font-bold">{activePersona}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1 text-[10px] font-mono-tech">
+                {(['JARVIS', 'FRIDAY', 'ULTRON', 'EDITH'] as const).map((ai) => {
+                  const isCur = activePersona === ai;
+                  return (
+                    <button
+                      key={ai}
+                      type="button"
+                      onClick={() => handleSelectPersona(ai)}
+                      className={`py-1 rounded border text-center transition-all cursor-pointer font-bold ${
+                        isCur
+                          ? ai === 'JARVIS'
+                            ? 'bg-cyan-950 border-cyan-400 text-cyan-300'
+                            : ai === 'FRIDAY'
+                            ? 'bg-orange-950 border-orange-400 text-orange-300'
+                            : ai === 'ULTRON'
+                            ? 'bg-red-950 border-red-500 text-red-300'
+                            : 'bg-blue-950 border-blue-400 text-blue-300'
+                          : 'bg-gray-900 border-gray-800 text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      {ai}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Bar 2: Palm Repulsor Capacitor Level */}
@@ -419,14 +492,54 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
             </svg>
           </div>
 
-          {/* J.A.R.V.I.S. Audioreactive HUD Banner right below central orb */}
-          <div className="w-full max-w-md mt-2 p-3 bg-gray-950/80 border border-cyan-500/30 rounded-xl relative z-10 text-center shadow-lg">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="font-tech text-xs font-bold text-cyan-300 tracking-wider">
-                J.A.R.V.I.S. VOCAL INTERFACE
-              </span>
-              <span className="text-[10px] text-gray-500 font-mono-tech">PILOT: TONY STARK</span>
+          {/* Active AI Audioreactive HUD Banner right below central orb */}
+          <div className={`w-full max-w-md mt-2 p-3 bg-gray-950/80 border rounded-xl relative z-10 text-center shadow-lg transition-all ${
+            activePersona === 'JARVIS'
+              ? 'border-cyan-500/40'
+              : activePersona === 'FRIDAY'
+              ? 'border-orange-500/40'
+              : activePersona === 'ULTRON'
+              ? 'border-red-500/40'
+              : 'border-blue-500/40'
+          }`}>
+            <div className="flex items-center justify-between mb-1 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full animate-pulse ${
+                  activePersona === 'JARVIS' ? 'bg-cyan-400' : activePersona === 'FRIDAY' ? 'bg-orange-400' : activePersona === 'ULTRON' ? 'bg-red-500' : 'bg-blue-400'
+                }`} />
+                <span className={`font-tech text-xs font-bold tracking-wider ${
+                  activePersona === 'JARVIS' ? 'text-cyan-300' : activePersona === 'FRIDAY' ? 'text-orange-300' : activePersona === 'ULTRON' ? 'text-red-300' : 'text-blue-300'
+                }`}>
+                  {activePersona === 'JARVIS' ? 'J.A.R.V.I.S.' : activePersona === 'FRIDAY' ? 'F.R.I.D.A.Y.' : activePersona === 'ULTRON' ? 'U.L.T.R.O.N.' : 'E.D.I.T.H.'} VOCAL INTERFACE
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const cycle: Record<AiPersona, AiPersona> = {
+                      JARVIS: 'FRIDAY',
+                      FRIDAY: 'ULTRON',
+                      ULTRON: 'EDITH',
+                      EDITH: 'JARVIS',
+                    };
+                    handleSelectPersona(cycle[activePersona]);
+                  }}
+                  className="text-[9px] font-mono-tech px-2 py-0.5 rounded border border-gray-700 bg-gray-900 hover:border-cyan-400 text-gray-300 cursor-pointer font-bold"
+                  title="Cycle to next AI Persona"
+                >
+                  NEXT AI ⇄
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('aiPersona')}
+                  className="text-[9px] font-mono-tech px-1.5 py-0.5 rounded border border-gray-800 bg-gray-950 text-cyan-400 hover:underline cursor-pointer"
+                  title="Open full AI Persona Matrix"
+                >
+                  MATRIX ↗
+                </button>
+              </div>
             </div>
             <p className="text-xs text-slate-100 font-sans leading-relaxed italic">
               "{latestJarvisSpeech}"
