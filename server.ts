@@ -996,7 +996,7 @@ set APP_URL=${hostUrl}
 start msedge --app="%APP_URL%" || start chrome --app="%APP_URL%" || start "" "%APP_URL%"
 echo.
 echo [SUCCESS] J.A.R.V.I.S. Iron Man Gauntlet OS is active!
-echo Clearance level: ALPHA-1 AUTHORIZED (Tony Stark / Lisara Kodikara).
+echo Clearance level: ALPHA-1 AUTHORIZED (Tony Stark / Lisara Kodikara ^<jdushi@gmail.com^>).
 pause
 `;
   res.setHeader('Content-Type', 'application/x-msdownload');
@@ -1042,10 +1042,10 @@ app.get('/api/download/project-source.zip', (req, res) => {
 
 app.get('/api/download/github-info', (req, res) => {
   res.json({
-    repoUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os',
-    releaseUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases',
-    exeDownloadUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/download/v1.0.0/JARVIS-IronMan-Gauntlet-Setup.exe',
-    portableExeUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/download/v1.0.0/JARVIS-Gauntlet-Portable.exe',
+    repoUrl: 'https://github.com/dushi2933/DUS-JARVIS',
+    releaseUrl: 'https://github.com/dushi2933/DUS-JARVIS/releases',
+    exeDownloadUrl: 'https://github.com/dushi2933/DUS-JARVIS/releases/download/v1.0.0/JARVIS-IronMan-Gauntlet-Setup.exe',
+    portableExeUrl: 'https://github.com/dushi2933/DUS-JARVIS/releases/download/v1.0.0/JARVIS-Gauntlet-Portable.exe',
     version: '1.0.0',
     targetPlatforms: ['Windows 10/11 (x64)', 'macOS (Universal)', 'Linux (.AppImage)', 'Android (.apk)'],
   });

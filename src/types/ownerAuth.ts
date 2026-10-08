@@ -26,6 +26,8 @@ export interface OwnerAccount {
   lastExecutiveDirective?: string;
   password: string; // Personal account passcode
   portalUrl: string; // Dedicated unique portal URL for this owner
+  email?: string;
+  githubHandle?: string;
 }
 
 export interface SecurityAuditLog {
@@ -58,7 +60,9 @@ export const INITIAL_OWNER_ACCOUNTS: OwnerAccount[] = [
     department: 'Stark Systems Autonomous Core R&D',
     avatarColor: '#f59e0b',
     badge: '★ LEAD MASTER CREATOR',
-    bio: 'Primary engineer and creator behind the J.A.R.V.I.S. Iron Man Gauntlet OS. Holds master cryptographic publishing authority.',
+    bio: 'Primary engineer and creator behind the J.A.R.V.I.S. Iron Man Gauntlet OS (GitHub: dushi2933/DUS-JARVIS). Holds master cryptographic publishing authority.',
+    email: 'jdushi@gmail.com',
+    githubHandle: 'dushi2933',
     isMasterCreator: true,
     canPublish: true,
     status: 'ACTIVE',

@@ -33,10 +33,10 @@ export const PublishingCommandCenter: React.FC = () => {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [activeOsTab, setActiveOsTab] = useState<'windows' | 'macos' | 'linux' | 'android' | 'pwa'>('windows');
 
-  const GITHUB_REPO_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os';
-  const GITHUB_RELEASES_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases';
-  const EXE_SETUP_DOWNLOAD_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/latest/download/JARVIS-IronMan-Gauntlet-Setup.exe';
-  const EXE_PORTABLE_DOWNLOAD_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/latest/download/JARVIS-IronMan-Gauntlet-Portable.exe';
+  const GITHUB_REPO_URL = 'https://github.com/dushi2933/DUS-JARVIS';
+  const GITHUB_RELEASES_URL = 'https://github.com/dushi2933/DUS-JARVIS/releases';
+  const EXE_SETUP_DOWNLOAD_URL = 'https://github.com/dushi2933/DUS-JARVIS/releases/latest/download/JARVIS-IronMan-Gauntlet-Setup.exe';
+  const EXE_PORTABLE_DOWNLOAD_URL = 'https://github.com/dushi2933/DUS-JARVIS/releases/latest/download/JARVIS-IronMan-Gauntlet-Portable.exe';
 
   const copyToClipboard = (text: string, sectionId: string) => {
     requireMasterPublishAccess(() => {
@@ -97,7 +97,7 @@ export const PublishingCommandCenter: React.FC = () => {
       window.open(GITHUB_REPO_URL, '_blank');
       addToast({
         title: 'GitHub Repository Opened',
-        message: 'Redirecting to Lisara Kodikara GitHub repository & releases.',
+        message: 'Redirecting to dushi2933/DUS-JARVIS repository on GitHub.',
         type: 'status',
       });
     });
@@ -220,11 +220,14 @@ This software is strictly non-commercial and provided free of charge for persona
               <Github className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/50 px-2 py-0.5 rounded">
-                  OFFICIAL GITHUB RELEASE v1.0.0
+                  GITHUB REPO: dushi2933/DUS-JARVIS
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/40">
+                  CREATOR: jdushi@gmail.com
+                </span>
+                <span className="text-[10px] font-mono text-amber-300 font-bold bg-amber-950 px-2 py-0.5 rounded border border-amber-500/40">
                   WINDOWS 10 & 11 READY
                 </span>
               </div>
@@ -239,30 +242,39 @@ This software is strictly non-commercial and provided free of charge for persona
               onClick={handleOpenGithub}
               className="px-3.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white border border-gray-600 font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
             >
-              <Github className="w-3.5 h-3.5" />
+              <Github className="w-3.5 h-3.5 text-cyan-400" />
               <span>VIEW GITHUB REPO</span>
               <ExternalLink className="w-3 h-3 text-gray-400" />
             </button>
+            <a
+              href="https://github.com/dushi2933/DUS-JARVIS/releases/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-300 font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+            >
+              <Package className="w-3.5 h-3.5 text-amber-400" />
+              <span>DRAFT RELEASE v1.0.0</span>
+            </a>
           </div>
         </div>
 
         {/* GitHub 404 Explanation & AI Studio Export */}
-        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-xl text-xs font-mono-tech space-y-2 text-red-200">
-          <div className="flex items-center gap-2 text-red-300 font-bold">
-            <span className="text-base">⚠️</span>
-            <span>Why did GitHub show "404 - This is not the web page you are looking for"?</span>
+        <div className="p-3.5 bg-cyan-950/40 border border-cyan-500/40 rounded-xl text-xs font-mono-tech space-y-2 text-cyan-200">
+          <div className="flex items-center gap-2 text-emerald-400 font-bold">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>Repository Connected: github.com/dushi2933/DUS-JARVIS</span>
           </div>
           <p className="text-[11px] text-gray-300 font-sans leading-relaxed">
-            The link showed <strong>404</strong> because the repository hasn't been created on GitHub yet! You have 2 ways to get the project files:
+            Your repository is active on GitHub! If you click a direct Release link and see GitHub's 404 page, it is because no release tag (e.g. <code>v1.0.0</code>) has been published yet. You can download the complete source code or Windows executable right now below:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
-            <div className="p-2.5 rounded-lg bg-gray-900/80 border border-gray-700">
-              <strong className="text-cyan-300 block mb-1">Option 1: One-Click AI Studio Export</strong>
-              <span>Look at the <strong>top right corner of the AI Studio window</strong> &rarr; click <strong className="text-white bg-cyan-900 px-1 rounded">Publish</strong> &rarr; select <strong className="text-amber-300">"GitHub"</strong>. AI Studio will automatically create the repository on your GitHub account!</span>
-            </div>
-            <div className="p-2.5 rounded-lg bg-gray-900/80 border border-gray-700">
-              <strong className="text-emerald-300 block mb-1">Option 2: Direct Source Download (.ZIP)</strong>
+            <div className="p-2.5 rounded-lg bg-gray-900/80 border border-cyan-500/30">
+              <strong className="text-cyan-300 block mb-1">Option 1: Direct Source Download (.ZIP)</strong>
               <span>Click the green <strong className="text-emerald-300">"DOWNLOAD SOURCE (.ZIP)"</strong> button below to download all source files directly to your PC right now without needing GitHub!</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-gray-900/80 border border-cyan-500/30">
+              <strong className="text-amber-300 block mb-1">Option 2: Windows Setup Launcher (.EXE)</strong>
+              <span>Click <strong className="text-cyan-300">"DOWNLOAD SETUP (.EXE)"</strong> to get the Windows 10/11 native launcher and run J.A.R.V.I.S. locally on your desktop.</span>
             </div>
           </div>
         </div>

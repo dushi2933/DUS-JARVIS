@@ -38,8 +38,8 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
 
   const [copiedGithub, setCopiedGithub] = React.useState(false);
 
-  const GITHUB_REPO_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os';
-  const GITHUB_RELEASES_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases';
+  const GITHUB_REPO_URL = 'https://github.com/dushi2933/DUS-JARVIS';
+  const GITHUB_RELEASES_URL = 'https://github.com/dushi2933/DUS-JARVIS/releases';
 
   const downloadSourceZip = () => {
     requireMasterPublishAccess(() => {
@@ -168,31 +168,38 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
             </div>
           </div>
 
-          {/* Step 2: AI Studio Top-Right Publish -> GitHub & Windows (.exe) */}
+          {/* Step 2: GitHub Repository dushi2933/DUS-JARVIS & Windows (.exe) */}
           <div className="bg-gradient-to-r from-gray-950 via-slate-900 to-cyan-950/50 border-2 border-cyan-500/50 rounded-xl p-4 shadow-lg space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-tech font-bold text-sm text-cyan-300">
                 <Github className="w-4 h-4 text-cyan-400" />
-                <span>Step 2: Top-Right "Publish" → GitHub & Windows (.exe)</span>
+                <span>Step 2: Connected GitHub Repository: DUS-JARVIS</span>
               </div>
-              <span className="text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-500/50 px-2 py-0.5 rounded font-bold">
-                TOP-RIGHT PUBLISH → GITHUB
+              <span className="text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-500/50 px-2 py-0.5 rounded font-bold">
+                REPO CONNECTED: dushi2933/DUS-JARVIS
               </span>
             </div>
 
-            {/* GitHub 404 Explanation & AI Studio Export */}
-            <div className="bg-red-950/30 border border-red-500/40 rounded-lg p-3 text-xs space-y-1.5 text-red-200 font-mono-tech">
-              <div className="flex items-center gap-2 text-red-300 font-bold">
-                <span className="text-base">⚠️</span>
-                <span>Why did GitHub show "404 - Not Found"?</span>
+            {/* GitHub Repo Status & Releases Info */}
+            <div className="bg-gray-900/90 border border-cyan-500/40 rounded-lg p-3 text-xs space-y-2 text-cyan-100 font-mono-tech">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-cyan-300 font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>GitHub Repository: github.com/dushi2933/DUS-JARVIS</span>
+                </div>
+                <a
+                  href="https://github.com/dushi2933/DUS-JARVIS"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1 rounded bg-cyan-900 hover:bg-cyan-800 text-cyan-200 text-[11px] font-bold flex items-center gap-1 border border-cyan-500/40"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>OPEN ON GITHUB</span>
+                </a>
               </div>
               <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
-                The link showed <strong>404</strong> because the repository hasn't been created on GitHub yet! To create it on your GitHub account:
+                Your repository <strong>dushi2933/DUS-JARVIS</strong> is live on GitHub! Note that direct releases links show 404 until a release is drafted on GitHub. You can download the full code right now as a <strong>.ZIP</strong>, or download the <strong>Windows .EXE Launcher</strong>:
               </p>
-              <ol className="list-decimal list-inside space-y-1 text-gray-300 text-[11px] leading-relaxed">
-                <li>Look at the <strong>top right corner of the AI Studio window</strong> &rarr; click <strong className="text-white bg-cyan-900 px-1 rounded">Publish</strong>.</li>
-                <li>Choose <strong className="text-amber-300">"GitHub"</strong> to export and create your repository automatically!</li>
-              </ol>
             </div>
 
             <p className="leading-relaxed text-gray-300">

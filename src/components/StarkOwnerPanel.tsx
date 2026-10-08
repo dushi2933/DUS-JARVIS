@@ -340,8 +340,9 @@ export const StarkOwnerPanel: React.FC<StarkOwnerPanelProps> = ({
                   <span>★ MASTER CREATOR</span>
                   <span className="text-amber-300 font-tech font-bold text-xs">2017</span>
                 </div>
-                <div className="text-white text-xs font-bold mt-0.5">Lisara Kodikara</div>
-                <div className="text-[9px] text-gray-400 mt-1">Unlocks Install & Publish</div>
+                <div className="text-white text-xs font-bold mt-0.5">Lisara Kodikara (Dushi)</div>
+                <div className="text-[9px] text-amber-300/80 mt-0.5 font-mono">jdushi@gmail.com</div>
+                <div className="text-[9px] text-gray-400 mt-0.5">Unlocks Install & Publish</div>
               </button>
 
               <button
@@ -738,6 +739,16 @@ export const StarkOwnerPanel: React.FC<StarkOwnerPanelProps> = ({
                           <span className="text-[11px] font-mono text-gray-400 block">
                             @{acc.handle}
                           </span>
+                          {acc.email && (
+                            <span className="text-[10px] font-mono text-amber-300/90 block">
+                              ✉ {acc.email}
+                            </span>
+                          )}
+                          {acc.githubHandle && (
+                            <span className="text-[10px] font-mono text-cyan-400/90 block">
+                              ⌥ github.com/{acc.githubHandle}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -1323,14 +1334,14 @@ export const StarkOwnerPanel: React.FC<StarkOwnerPanelProps> = ({
                   </a>
 
                   <a
-                    href="https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os"
+                    href="https://github.com/dushi2933/DUS-JARVIS"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => {
                       if (!isMasterPublishUnlocked) {
                         e.preventDefault();
                         requireMasterPublishAccess(() => {
-                          window.open('https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os', '_blank');
+                          window.open('https://github.com/dushi2933/DUS-JARVIS', '_blank');
                         });
                       }
                     }}
