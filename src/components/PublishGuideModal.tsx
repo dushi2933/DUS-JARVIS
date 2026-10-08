@@ -41,6 +41,24 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
   const GITHUB_REPO_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os';
   const GITHUB_RELEASES_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases';
 
+  const downloadSourceZip = () => {
+    requireMasterPublishAccess(() => {
+      soundFx.playArcReactorPulse();
+      const link = document.createElement('a');
+      link.href = '/api/download/project-source.zip';
+      link.download = 'jarvis-ironman-gauntlet-source.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      addToast({
+        title: 'Downloading Source ZIP',
+        message: 'Downloading complete J.A.R.V.I.S. source code (.zip) to your laptop!',
+        type: 'status',
+      });
+    });
+  };
+
   const downloadExe = () => {
     requireMasterPublishAccess(() => {
       soundFx.playArcReactorPulse();
@@ -162,42 +180,42 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
               </span>
             </div>
 
-            <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 text-xs space-y-2 text-cyan-100 font-mono-tech">
-              <p className="font-bold text-cyan-300 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>YES! Look at the top right of the AI Studio screen:</span>
+            {/* GitHub 404 Explanation & AI Studio Export */}
+            <div className="bg-red-950/30 border border-red-500/40 rounded-lg p-3 text-xs space-y-1.5 text-red-200 font-mono-tech">
+              <div className="flex items-center gap-2 text-red-300 font-bold">
+                <span className="text-base">⚠️</span>
+                <span>Why did GitHub show "404 - Not Found"?</span>
+              </div>
+              <p className="text-[11px] text-gray-300 leading-relaxed font-sans">
+                The link showed <strong>404</strong> because the repository hasn't been created on GitHub yet! To create it on your GitHub account:
               </p>
               <ol className="list-decimal list-inside space-y-1 text-gray-300 text-[11px] leading-relaxed">
-                <li>Click the <strong className="text-white bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-500/50">"Publish"</strong> button in the <strong>top right corner</strong> of AI Studio.</li>
-                <li>Select <strong className="text-amber-300">"GitHub" / "Export to GitHub"</strong>.</li>
-                <li>AI Studio will create a GitHub repository with all files ready to clone or build into an .exe!</li>
+                <li>Look at the <strong>top right corner of the AI Studio window</strong> &rarr; click <strong className="text-white bg-cyan-900 px-1 rounded">Publish</strong>.</li>
+                <li>Choose <strong className="text-amber-300">"GitHub"</strong> to export and create your repository automatically!</li>
               </ol>
             </div>
 
             <p className="leading-relaxed text-gray-300">
-              Or download the standalone Windows installer setup (<code>JARVIS-IronMan-Gauntlet-Setup.exe</code>) directly here:
+              Or download the complete source code (.zip) or Windows executable (.exe) directly right here without needing GitHub:
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
+              {/* Direct Full Source Code ZIP Download */}
+              <button
+                onClick={downloadSourceZip}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-tech font-bold flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.4)] border border-emerald-400/50"
+              >
+                <Download className="w-4 h-4" />
+                <span>DOWNLOAD SOURCE (.ZIP)</span>
+              </button>
+
+              {/* Windows .EXE Installer */}
               <button
                 onClick={downloadExe}
                 className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-tech font-bold flex items-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-400/50"
               >
                 <Download className="w-4 h-4" />
                 <span>DOWNLOAD WINDOWS .EXE</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  requireMasterPublishAccess(() => {
-                    window.open(GITHUB_REPO_URL, '_blank');
-                  });
-                }}
-                className="px-3.5 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600 font-tech font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-              >
-                <Github className="w-4 h-4" />
-                <span>OPEN GITHUB REPO</span>
-                <ExternalLink className="w-3 h-3 text-gray-400" />
               </button>
 
               <button

@@ -1,10 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { GoogleGenAI, Type } from '@google/genai';
+import { ZipArchive } from 'archiver';
 
 dotenv.config();
 
@@ -1000,6 +1002,42 @@ pause
   res.setHeader('Content-Type', 'application/x-msdownload');
   res.setHeader('Content-Disposition', 'attachment; filename="JARVIS-IronMan-Gauntlet-Setup.exe"');
   res.send(windowsInstallerScript);
+});
+
+// Direct ZIP archive download containing full project source code
+app.get('/api/download/project-source.zip', (req, res) => {
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', 'attachment; filename="jarvis-ironman-gauntlet-source.zip"');
+
+  const archive = new ZipArchive({
+    zlib: { level: 9 },
+  });
+
+  archive.on('error', (err: any) => {
+    console.error('Error generating zip:', err);
+    if (!res.headersSent) {
+      res.status(500).send({ error: 'Failed to create archive' });
+    }
+  });
+
+  archive.pipe(res);
+
+  // Add source files, excluding node_modules, dist, .git, and temporary files
+  const rootDir = process.cwd();
+  archive.glob('**/*', {
+    cwd: rootDir,
+    ignore: [
+      'node_modules/**',
+      'dist/**',
+      '.git/**',
+      '.cache/**',
+      '*.log',
+      '.env',
+    ],
+    dot: true,
+  });
+
+  archive.finalize();
 });
 
 app.get('/api/download/github-info', (req, res) => {

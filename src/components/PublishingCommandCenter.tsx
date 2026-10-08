@@ -73,6 +73,24 @@ export const PublishingCommandCenter: React.FC = () => {
     });
   };
 
+  const handleDownloadSourceZip = () => {
+    requireMasterPublishAccess(() => {
+      soundFx.playArcReactorPulse();
+      const link = document.createElement('a');
+      link.href = '/api/download/project-source.zip';
+      link.download = 'jarvis-ironman-gauntlet-source.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      addToast({
+        title: 'Project Source Code (.ZIP) Downloading',
+        message: 'Beginning download of complete J.A.R.V.I.S. source code repository archive!',
+        type: 'status',
+      });
+    });
+  };
+
   const handleOpenGithub = () => {
     requireMasterPublishAccess(() => {
       soundFx.playHudBeep('confirm');
@@ -228,19 +246,49 @@ This software is strictly non-commercial and provided free of charge for persona
           </div>
         </div>
 
-        {/* Quick Guide: Top Right Publish -> GitHub in AI Studio */}
-        <div className="p-3 bg-cyan-950/40 border border-cyan-500/40 rounded-xl text-xs font-mono-tech flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-cyan-200">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>
-              <strong>AI Studio Top-Right:</strong> Click the <span className="text-white bg-cyan-900/80 px-2 py-0.5 rounded border border-cyan-400 font-bold">Publish</span> button in the top right corner of the AI Studio window &rarr; select <span className="text-amber-300 font-bold">"Export to GitHub"</span> to sync all code to your repository!
-            </span>
+        {/* GitHub 404 Explanation & AI Studio Export */}
+        <div className="p-3.5 bg-red-950/40 border border-red-500/40 rounded-xl text-xs font-mono-tech space-y-2 text-red-200">
+          <div className="flex items-center gap-2 text-red-300 font-bold">
+            <span className="text-base">⚠️</span>
+            <span>Why did GitHub show "404 - This is not the web page you are looking for"?</span>
+          </div>
+          <p className="text-[11px] text-gray-300 font-sans leading-relaxed">
+            The link showed <strong>404</strong> because the repository hasn't been created on GitHub yet! You have 2 ways to get the project files:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
+            <div className="p-2.5 rounded-lg bg-gray-900/80 border border-gray-700">
+              <strong className="text-cyan-300 block mb-1">Option 1: One-Click AI Studio Export</strong>
+              <span>Look at the <strong>top right corner of the AI Studio window</strong> &rarr; click <strong className="text-white bg-cyan-900 px-1 rounded">Publish</strong> &rarr; select <strong className="text-amber-300">"GitHub"</strong>. AI Studio will automatically create the repository on your GitHub account!</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-gray-900/80 border border-gray-700">
+              <strong className="text-emerald-300 block mb-1">Option 2: Direct Source Download (.ZIP)</strong>
+              <span>Click the green <strong className="text-emerald-300">"DOWNLOAD SOURCE (.ZIP)"</strong> button below to download all source files directly to your PC right now without needing GitHub!</span>
+            </div>
           </div>
         </div>
 
-        {/* Action Buttons for .EXE Download */}
+        {/* Action Buttons for .EXE and .ZIP Download */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {/* 1. Main Windows Setup .exe */}
+          {/* 1. Full Project Source Code .ZIP */}
+          <button
+            onClick={handleDownloadSourceZip}
+            className="p-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.35)] transition-all group border border-emerald-400/50"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="flex items-center gap-1.5 text-sm">
+                <Download className="w-4 h-4 text-white group-hover:animate-bounce" />
+                <span>DOWNLOAD SOURCE (.ZIP)</span>
+              </span>
+              <span className="text-[10px] font-mono bg-black/40 px-1.5 py-0.5 rounded text-emerald-200">
+                ALL FILES
+              </span>
+            </div>
+            <span className="text-[10px] font-sans font-normal text-emerald-100 text-left">
+              Complete source code package. Unzip and run locally, or push directly to your GitHub!
+            </span>
+          </button>
+
+          {/* 2. Main Windows Setup .exe */}
           <button
             onClick={() => handleDownloadExe('setup')}
             className="p-3.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all group border border-cyan-400/50"
@@ -259,7 +307,7 @@ This software is strictly non-commercial and provided free of charge for persona
             </span>
           </button>
 
-          {/* 2. Portable .exe */}
+          {/* 3. Portable .exe */}
           <button
             onClick={() => handleDownloadExe('portable')}
             className="p-3.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-cyan-300 font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer transition-all border border-cyan-500/40 hover:border-cyan-400"
@@ -277,35 +325,6 @@ This software is strictly non-commercial and provided free of charge for persona
               Single standalone executable. Run directly from USB stick or Downloads without installation.
             </span>
           </button>
-
-          {/* 3. GitHub Releases Direct Page */}
-          <a
-            href={GITHUB_RELEASES_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              if (!isMasterPublishUnlocked) {
-                e.preventDefault();
-                requireMasterPublishAccess(() => {
-                  window.open(GITHUB_RELEASES_URL, '_blank');
-                });
-              }
-            }}
-            className="p-3.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-purple-300 font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer transition-all border border-purple-500/40 hover:border-purple-400"
-          >
-            <div className="flex items-center justify-between w-full">
-              <span className="flex items-center gap-1.5 text-sm text-purple-200">
-                <ExternalLink className="w-4 h-4 text-purple-400" />
-                <span>GITHUB RELEASES PAGE</span>
-              </span>
-              <span className="text-[10px] font-mono bg-purple-950 px-1.5 py-0.5 rounded text-purple-300">
-                MIRROR
-              </span>
-            </div>
-            <span className="text-[10px] font-sans font-normal text-gray-400 text-left">
-              Browse all release assets, checksums (SHA-256), release notes, and macOS/Linux builds.
-            </span>
-          </a>
         </div>
 
         {/* Quick Link URLs & Clone Command */}
