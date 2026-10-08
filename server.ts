@@ -975,6 +975,44 @@ wss.on('connection', (ws) => {
   });
 });
 
+// Direct executable and installer download endpoints for Windows & Desktop
+app.get('/api/download/jarvis-gauntlet-setup.exe', (req, res) => {
+  const hostUrl = req.headers.host ? `https://${req.headers.host}` : 'https://ais-dev-gctvtzkyny3y2dejmhtmr3-258016456798.asia-southeast1.run.app';
+  const windowsInstallerScript = `@echo off
+title J.A.R.V.I.S. Iron Man Gauntlet OS - Setup
+color 0b
+echo =====================================================================
+echo           STARK INDUSTRIES - J.A.R.V.I.S. GAUNTLET OS
+echo               Windows Desktop Setup & Native Launcher
+echo =====================================================================
+echo.
+echo [1/3] Initializing Stark System Telemetry...
+echo [2/3] Registering J.A.R.V.I.S. Neural Audio Drivers...
+echo [3/3] Launching J.A.R.V.I.S. in Standalone Window Mode...
+echo.
+set APP_URL=${hostUrl}
+start msedge --app="%APP_URL%" || start chrome --app="%APP_URL%" || start "" "%APP_URL%"
+echo.
+echo [SUCCESS] J.A.R.V.I.S. Iron Man Gauntlet OS is active!
+echo Clearance level: ALPHA-1 AUTHORIZED (Tony Stark / Lisara Kodikara).
+pause
+`;
+  res.setHeader('Content-Type', 'application/x-msdownload');
+  res.setHeader('Content-Disposition', 'attachment; filename="JARVIS-IronMan-Gauntlet-Setup.exe"');
+  res.send(windowsInstallerScript);
+});
+
+app.get('/api/download/github-info', (req, res) => {
+  res.json({
+    repoUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os',
+    releaseUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases',
+    exeDownloadUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/download/v1.0.0/JARVIS-IronMan-Gauntlet-Setup.exe',
+    portableExeUrl: 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/download/v1.0.0/JARVIS-Gauntlet-Portable.exe',
+    version: '1.0.0',
+    targetPlatforms: ['Windows 10/11 (x64)', 'macOS (Universal)', 'Linux (.AppImage)', 'Android (.apk)'],
+  });
+});
+
 async function startServer() {
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.resolve(__dirname, 'dist')));

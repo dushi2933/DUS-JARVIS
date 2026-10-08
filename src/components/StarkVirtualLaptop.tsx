@@ -1637,8 +1637,32 @@ Total Physical Memory:     131,072 MB RAM (128 GB LPDDR5X)`;
                             <span className="px-2 py-0.5 rounded-full border border-gray-700 text-gray-400 text-[10px]">Public</span>
                           </div>
                           <div className="flex items-center gap-2">
+                            <a
+                              href="/api/download/jarvis-gauntlet-setup.exe"
+                              download="JARVIS-IronMan-Gauntlet-Setup.exe"
+                              className="px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-gray-950 font-bold text-[11px] flex items-center gap-1 cursor-pointer transition-all"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>DOWNLOAD .EXE (v1.0.0)</span>
+                            </a>
                             <span className="px-2 py-1 rounded bg-gray-900 border border-gray-800 text-amber-400">★ 42.8k Stars</span>
                           </div>
+                        </div>
+
+                        {/* Windows Release Banner */}
+                        <div className="p-3 bg-gradient-to-r from-gray-900 to-cyan-950 border border-cyan-500/40 rounded-xl flex items-center justify-between">
+                          <div>
+                            <span className="text-cyan-400 font-bold block text-[11px]">Latest Release: v1.0.0-windows-x64</span>
+                            <span className="text-gray-400 text-[10px]">Direct Windows NSIS installer + Portable binary (.exe)</span>
+                          </div>
+                          <a
+                            href="/api/download/jarvis-gauntlet-setup.exe"
+                            download="JARVIS-IronMan-Gauntlet-Setup.exe"
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>JARVIS-Setup.exe (Direct)</span>
+                          </a>
                         </div>
 
                         {/* File Tree */}

@@ -15,20 +15,74 @@ import {
   FolderDown,
   Scale,
   Lock,
+  Unlock,
+  KeyRound,
   Globe,
-  Smartphone
+  Smartphone,
+  Github,
+  Package,
+  CheckCircle2
 } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
+import { useOwnerAuth } from '../context/OwnerAuthContext';
+import { useToast } from '../context/ToastContext';
 
 export const PublishingCommandCenter: React.FC = () => {
+  const { isMasterPublishUnlocked, requireMasterPublishAccess, lockMasterPublish } = useOwnerAuth();
+  const { addToast } = useToast();
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [activeOsTab, setActiveOsTab] = useState<'windows' | 'macos' | 'linux' | 'android' | 'pwa'>('windows');
 
+  const GITHUB_REPO_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os';
+  const GITHUB_RELEASES_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases';
+  const EXE_SETUP_DOWNLOAD_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/latest/download/JARVIS-IronMan-Gauntlet-Setup.exe';
+  const EXE_PORTABLE_DOWNLOAD_URL = 'https://github.com/lisara-kodikara/jarvis-ironman-gauntlet-os/releases/latest/download/JARVIS-IronMan-Gauntlet-Portable.exe';
+
   const copyToClipboard = (text: string, sectionId: string) => {
-    soundFx.playHudBeep('confirm');
-    navigator.clipboard.writeText(text);
-    setCopiedSection(sectionId);
-    setTimeout(() => setCopiedSection(null), 2500);
+    requireMasterPublishAccess(() => {
+      soundFx.playHudBeep('confirm');
+      navigator.clipboard.writeText(text);
+      setCopiedSection(sectionId);
+      setTimeout(() => setCopiedSection(null), 2500);
+      addToast({
+        title: 'Copied to Clipboard',
+        message: 'Snippet copied for deployment.',
+        type: 'protocol',
+      });
+    });
+  };
+
+  const handleDownloadExe = (type: 'setup' | 'portable') => {
+    requireMasterPublishAccess(() => {
+      soundFx.playArcReactorPulse();
+      const filename = type === 'setup' ? 'JARVIS-IronMan-Gauntlet-Setup.exe' : 'JARVIS-IronMan-Gauntlet-Portable.exe';
+      
+      // Trigger download from server route
+      const link = document.createElement('a');
+      link.href = '/api/download/jarvis-gauntlet-setup.exe';
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      addToast({
+        title: 'Windows Executable (.exe) Downloading',
+        message: `Beginning direct download of ${filename} (v1.0.0 for Windows 10/11)!`,
+        type: 'status',
+      });
+    });
+  };
+
+  const handleOpenGithub = () => {
+    requireMasterPublishAccess(() => {
+      soundFx.playHudBeep('confirm');
+      window.open(GITHUB_REPO_URL, '_blank');
+      addToast({
+        title: 'GitHub Repository Opened',
+        message: 'Redirecting to Lisara Kodikara GitHub repository & releases.',
+        type: 'status',
+      });
+    });
   };
 
   const electronPackageJsonSnippet = `{
@@ -91,7 +145,7 @@ This software is strictly non-commercial and provided free of charge for persona
       <div className="absolute inset-0 holo-grid opacity-20 pointer-events-none" />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3 mb-4 relative z-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyan-500/20 pb-3 mb-4 relative z-10">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-amber-950/40 border border-amber-400/40 flex items-center justify-center glow-arc-gold">
             <FolderDown className="w-4 h-4 text-amber-400" />
@@ -101,8 +155,196 @@ This software is strictly non-commercial and provided free of charge for persona
               CROSS-PLATFORM PUBLISHING & PACKAGING CENTER
             </h3>
             <p className="text-[11px] text-gray-400 font-sans">
-              Desktop & Mobile Publishing (Windows, macOS, Linux, Android) for Sirly Sarah
+              Desktop & Mobile Publishing (Windows, macOS, Linux, Android)
             </p>
+          </div>
+        </div>
+
+        {/* Master Creator 2017 Gate Badge */}
+        <div className="flex items-center gap-2">
+          <span className={`px-3 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 border ${
+            isMasterPublishUnlocked
+              ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300'
+              : 'bg-red-950/80 border-red-500 text-red-300'
+          }`}>
+            {isMasterPublishUnlocked ? <Unlock className="w-3.5 h-3.5 text-emerald-400" /> : <Lock className="w-3.5 h-3.5 text-red-400" />}
+            <span>{isMasterPublishUnlocked ? 'CREATOR AUTHORIZED' : 'LOCKED: CREATOR PASSCODE REQUIRED'}</span>
+          </span>
+
+          {!isMasterPublishUnlocked && (
+            <button
+              onClick={() => requireMasterPublishAccess(() => {})}
+              className="px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-gray-950 font-tech font-bold text-xs cursor-pointer shadow flex items-center gap-1"
+            >
+              <KeyRound className="w-3 h-3" />
+              <span>UNLOCK</span>
+            </button>
+          )}
+
+          {isMasterPublishUnlocked && (
+            <button
+              onClick={lockMasterPublish}
+              className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white font-mono text-xs cursor-pointer"
+            >
+              RELOCK
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ===================================================================== */}
+      {/* FEATURED: GITHUB REPOSITORY & WINDOWS (.EXE) DIRECT DOWNLOAD HUB      */}
+      {/* ===================================================================== */}
+      <div className="relative z-10 mb-6 p-5 bg-gradient-to-r from-gray-950 via-slate-900 to-cyan-950/40 border-2 border-cyan-500/50 rounded-2xl shadow-[0_0_35px_rgba(6,182,212,0.25)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyan-500/30 pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-900 border border-cyan-400 flex items-center justify-center text-cyan-300 shadow">
+              <Github className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/50 px-2 py-0.5 rounded">
+                  OFFICIAL GITHUB RELEASE v1.0.0
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/40">
+                  WINDOWS 10 & 11 READY
+                </span>
+              </div>
+              <h4 className="font-tech text-base font-bold text-white tracking-wide mt-0.5">
+                WINDOWS EXECUTABLE (.EXE) & GITHUB SOURCE HUB
+              </h4>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleOpenGithub}
+              className="px-3.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 hover:text-white border border-gray-600 font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+            >
+              <Github className="w-3.5 h-3.5" />
+              <span>VIEW GITHUB REPO</span>
+              <ExternalLink className="w-3 h-3 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Guide: Top Right Publish -> GitHub in AI Studio */}
+        <div className="p-3 bg-cyan-950/40 border border-cyan-500/40 rounded-xl text-xs font-mono-tech flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-cyan-200">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>
+              <strong>AI Studio Top-Right:</strong> Click the <span className="text-white bg-cyan-900/80 px-2 py-0.5 rounded border border-cyan-400 font-bold">Publish</span> button in the top right corner of the AI Studio window &rarr; select <span className="text-amber-300 font-bold">"Export to GitHub"</span> to sync all code to your repository!
+            </span>
+          </div>
+        </div>
+
+        {/* Action Buttons for .EXE Download */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* 1. Main Windows Setup .exe */}
+          <button
+            onClick={() => handleDownloadExe('setup')}
+            className="p-3.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all group border border-cyan-400/50"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="flex items-center gap-1.5 text-sm">
+                <Download className="w-4 h-4 text-white group-hover:animate-bounce" />
+                <span>DOWNLOAD SETUP (.EXE)</span>
+              </span>
+              <span className="text-[10px] font-mono bg-black/40 px-1.5 py-0.5 rounded text-cyan-200">
+                INSTALLER
+              </span>
+            </div>
+            <span className="text-[10px] font-sans font-normal text-cyan-100 text-left">
+              Full desktop installer for Windows 10 & 11. Adds Start Menu and Desktop shortcuts.
+            </span>
+          </button>
+
+          {/* 2. Portable .exe */}
+          <button
+            onClick={() => handleDownloadExe('portable')}
+            className="p-3.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-cyan-300 font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer transition-all border border-cyan-500/40 hover:border-cyan-400"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="flex items-center gap-1.5 text-sm text-cyan-200">
+                <Package className="w-4 h-4 text-cyan-400" />
+                <span>PORTABLE APP (.EXE)</span>
+              </span>
+              <span className="text-[10px] font-mono bg-gray-800 px-1.5 py-0.5 rounded text-amber-300">
+                ZERO INSTALL
+              </span>
+            </div>
+            <span className="text-[10px] font-sans font-normal text-gray-400 text-left">
+              Single standalone executable. Run directly from USB stick or Downloads without installation.
+            </span>
+          </button>
+
+          {/* 3. GitHub Releases Direct Page */}
+          <a
+            href={GITHUB_RELEASES_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              if (!isMasterPublishUnlocked) {
+                e.preventDefault();
+                requireMasterPublishAccess(() => {
+                  window.open(GITHUB_RELEASES_URL, '_blank');
+                });
+              }
+            }}
+            className="p-3.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-purple-300 font-tech font-bold text-xs flex flex-col items-start gap-1 cursor-pointer transition-all border border-purple-500/40 hover:border-purple-400"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span className="flex items-center gap-1.5 text-sm text-purple-200">
+                <ExternalLink className="w-4 h-4 text-purple-400" />
+                <span>GITHUB RELEASES PAGE</span>
+              </span>
+              <span className="text-[10px] font-mono bg-purple-950 px-1.5 py-0.5 rounded text-purple-300">
+                MIRROR
+              </span>
+            </div>
+            <span className="text-[10px] font-sans font-normal text-gray-400 text-left">
+              Browse all release assets, checksums (SHA-256), release notes, and macOS/Linux builds.
+            </span>
+          </a>
+        </div>
+
+        {/* Quick Link URLs & Clone Command */}
+        <div className="p-3 bg-gray-950/80 rounded-xl border border-gray-800 space-y-2 text-xs font-mono">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-gray-400 truncate">
+              <span className="text-cyan-400 font-bold shrink-0">GITHUB REPO:</span>
+              <span className="text-gray-300 truncate">{GITHUB_REPO_URL}</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => copyToClipboard(GITHUB_REPO_URL, 'repoUrl')}
+                className="px-2.5 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 text-[11px] flex items-center gap-1 cursor-pointer"
+              >
+                {copiedSection === 'repoUrl' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedSection === 'repoUrl' ? 'COPIED!' : 'COPY REPO LINK'}</span>
+              </button>
+              <button
+                onClick={() => copyToClipboard(EXE_SETUP_DOWNLOAD_URL, 'exeUrl')}
+                className="px-2.5 py-1 rounded bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[11px] flex items-center gap-1 cursor-pointer"
+              >
+                {copiedSection === 'exeUrl' ? <Check className="w-3 h-3 text-emerald-400" /> : <Download className="w-3 h-3" />}
+                <span>{copiedSection === 'exeUrl' ? 'COPIED!' : 'COPY .EXE URL'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-gray-850">
+            <div className="flex items-center gap-2 text-gray-400 truncate">
+              <span className="text-amber-400 font-bold shrink-0">GIT CLONE:</span>
+              <code className="text-amber-200 truncate">git clone {GITHUB_REPO_URL}.git</code>
+            </div>
+            <button
+              onClick={() => copyToClipboard(`git clone ${GITHUB_REPO_URL}.git`, 'cloneCmd')}
+              className="px-2.5 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 text-[11px] flex items-center gap-1 cursor-pointer shrink-0"
+            >
+              {copiedSection === 'cloneCmd' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              <span>{copiedSection === 'cloneCmd' ? 'COPIED!' : 'COPY COMMAND'}</span>
+            </button>
           </div>
         </div>
       </div>

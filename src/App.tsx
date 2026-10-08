@@ -42,7 +42,8 @@ import {
   Laptop,
   TrendingUp,
   DollarSign,
-  Building2
+  Building2,
+  Crown
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { CockpitHudView } from './components/CockpitHudView';
@@ -81,8 +82,11 @@ import { StarkLaptopNativeBridge } from './components/StarkLaptopNativeBridge';
 import { StarkVirtualLaptop } from './components/StarkVirtualLaptop';
 import { StarkInvestmentsPortal } from './components/StarkInvestmentsPortal';
 import { StarkFinancialBridge } from './components/StarkFinancialBridge';
+import { StarkOwnerPanel } from './components/StarkOwnerPanel';
+import { MasterCreatorGateModal } from './components/MasterCreatorGateModal';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { OwnerAuthProvider, useOwnerAuth } from './context/OwnerAuthContext';
 import { 
   GauntletState, 
   ArmorMark, 
@@ -97,8 +101,10 @@ import { jarvisWakeEngine, WakeWordStatus } from './utils/wakeWord';
 
 function MainAppContent() {
   const { addToast } = useToast();
+  const { requireMasterPublishAccess, ownerAccounts, switchAccount, unlockOwnerWithPin } = useOwnerAuth();
 
   const [activeTab, setActiveTab] = useState<
+    | 'owner'
     | 'cockpit'
     | 'investments'
     | 'financialBridge'
@@ -133,12 +139,56 @@ function MainAppContent() {
   >(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
-      if (p.get('portal') === 'bridge' || p.get('bridge')) return 'financialBridge';
-      if (p.get('portal') === 'invest' || p.get('invest') || window.location.search.includes('invest')) return 'investments';
+      const path = window.location.pathname.toLowerCase();
+      if (
+        p.get('portal') === 'owner' || 
+        p.get('portal') === 'owner-suite' || 
+        p.get('portal') === 'executive' || 
+        p.get('portal') === 'executive-suite' || 
+        p.get('owner') || 
+        p.get('executive') || 
+        p.get('suite') || 
+        p.get('stark-owner') ||
+        path.includes('/owner') ||
+        path.includes('/executive') ||
+        path.includes('/suite')
+      ) {
+        return 'owner';
+      }
+      if (p.get('portal') === 'bridge' || p.get('bridge') || path.includes('/bridge')) return 'financialBridge';
+      if (p.get('portal') === 'invest' || p.get('invest') || window.location.search.includes('invest') || path.includes('/invest')) return 'investments';
       if (p.get('freq') || p.get('room')) return 'friendCalls';
     }
     return 'cockpit';
   });
+
+  // Deep-link auto-switch for specific owner accounts (e.g. ?portal=owner&acc=owner-2, ?owner=tony, ?ps=1234567)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      const ownerParam = p.get('owner')?.toLowerCase();
+      const accParam = p.get('acc');
+      const pinParam = p.get('ps') || p.get('pin') || p.get('password');
+
+      let targetAccount = null;
+      if (accParam) {
+        targetAccount = ownerAccounts.find((a) => a.id === accParam);
+      }
+      if (!targetAccount && ownerParam && ownerParam !== 'true' && ownerParam !== '1') {
+        targetAccount = ownerAccounts.find(
+          (a) => a.handle.toLowerCase().includes(ownerParam) || a.name.toLowerCase().includes(ownerParam) || a.id.toLowerCase() === ownerParam
+        );
+      }
+
+      if (targetAccount) {
+        switchAccount(targetAccount.id);
+      }
+
+      if (pinParam) {
+        unlockOwnerWithPin(pinParam);
+      }
+    }
+  }, [ownerAccounts, switchAccount, unlockOwnerWithPin]);
 
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isBiometricsOpen, setIsBiometricsOpen] = useState(false);
@@ -903,6 +953,7 @@ function MainAppContent() {
       <Header
         onReset={handleReset}
         onOpenPublishGuide={() => setActiveTab('publishing')}
+        onOpenOwnerPanel={() => setActiveTab('owner')}
         activeProtocol={gauntletState.activeProtocol}
         isJarvisThinking={isProcessing}
         isBiometricAuthenticated={isBiometricAuthenticated}
@@ -959,9 +1010,10 @@ function MainAppContent() {
           </div>
         </div>
 
-        {/* Navigation Tabs (31 Operational Centers) */}
+        {/* Navigation Tabs (32 Operational Centers) */}
         <div className="flex items-center gap-1.5 p-1 bg-gray-900/90 border border-cyan-500/20 rounded-xl overflow-x-auto">
           {[
+            { id: 'owner', label: '👑 Stark Owner Executive Suite (10 Accounts)', icon: <Crown className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
             { id: 'investments', label: 'Stark Investments Portal', icon: <TrendingUp className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
             { id: 'financialBridge', label: 'Stark Financial Bridge (Vault & 2FA)', icon: <Building2 className="w-3.5 h-3.5 text-emerald-400" /> },
             { id: 'cockpit', label: 'Cockpit Wireframe HUD', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
@@ -1000,7 +1052,13 @@ function MainAppContent() {
                 key={tab.id}
                 onClick={() => {
                   soundFx.playHudBeep('subtle');
-                  setActiveTab(tab.id as any);
+                  if (tab.id === 'publishing') {
+                    requireMasterPublishAccess(() => {
+                      setActiveTab('publishing');
+                    });
+                  } else {
+                    setActiveTab(tab.id as any);
+                  }
                 }}
                 className={`px-3 py-2 rounded-lg text-xs font-tech font-bold tracking-wider transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                   isActive
@@ -1014,6 +1072,14 @@ function MainAppContent() {
             );
           })}
         </div>
+
+        {/* Tab -1: Stark Owner Executive Suite (10 Accounts + Sick Controls) */}
+        {activeTab === 'owner' && (
+          <StarkOwnerPanel
+            onOpenPublishing={() => setActiveTab('publishing')}
+            onNavigateTab={(tab) => setActiveTab(tab as any)}
+          />
+        )}
 
         {/* Tab 0: Stark Investments & Angel Backer Syndicate Portal */}
         {activeTab === 'investments' && (
@@ -1376,6 +1442,9 @@ function MainAppContent() {
         isOpen={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
       />
+
+      {/* Master Creator Gate Modal (Pass 2017) */}
+      <MasterCreatorGateModal />
     </div>
   );
 }
@@ -1384,7 +1453,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <MainAppContent />
+        <OwnerAuthProvider>
+          <MainAppContent />
+        </OwnerAuthProvider>
       </ToastProvider>
     </ThemeProvider>
   );

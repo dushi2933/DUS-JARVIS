@@ -19,15 +19,18 @@ import {
   Zap,
   Skull,
   Glasses,
-  ChevronDown
+  ChevronDown,
+  Crown
 } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
 import { jarvisVoice, AiPersona } from '../utils/speech';
 import { useTheme, THEME_CONFIGS, StarkTheme } from '../context/ThemeContext';
+import { useOwnerAuth } from '../context/OwnerAuthContext';
 
 interface HeaderProps {
   onReset: () => void;
   onOpenPublishGuide: () => void;
+  onOpenOwnerPanel?: () => void;
   activeProtocol: string;
   isJarvisThinking: boolean;
   isBiometricAuthenticated?: boolean;
@@ -39,6 +42,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onReset,
   onOpenPublishGuide,
+  onOpenOwnerPanel,
   activeProtocol,
   isJarvisThinking,
   isBiometricAuthenticated = true,
@@ -46,6 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
   isWakeWordEnabled = false,
   onToggleWakeWord,
 }) => {
+  const { isMasterPublishUnlocked, requireMasterPublishAccess, isOwnerUnlocked } = useOwnerAuth();
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
@@ -153,18 +158,20 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleInstallClick = () => {
     soundFx.playHudBeep('confirm');
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          setCanInstallPwa(false);
-        }
-        setDeferredPrompt(null);
-      });
-    } else {
-      // Open the comprehensive Publish / Laptop App guide
-      onOpenPublishGuide();
-    }
+    requireMasterPublishAccess(() => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult: any) => {
+          if (choiceResult.outcome === 'accepted') {
+            setCanInstallPwa(false);
+          }
+          setDeferredPrompt(null);
+        });
+      } else {
+        // Open the comprehensive Publish / Laptop App guide
+        onOpenPublishGuide();
+      }
+    });
   };
 
   return (
@@ -400,12 +407,42 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline font-mono-tech">RESET</span>
           </button>
 
-          {/* Install / Publish to Laptop Button */}
+          {/* Owner Executive Panel Button */}
+          {onOpenOwnerPanel && (
+            <button
+              onClick={() => {
+                soundFx.playHudBeep('mode');
+                onOpenOwnerPanel();
+              }}
+              title="Open Stark Executive Owner Panel"
+              className={`p-2 rounded-lg border font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all ${
+                isOwnerUnlocked
+                  ? 'border-amber-500/70 bg-amber-500/20 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                  : 'border-gray-800 bg-gray-900/60 text-gray-400 hover:text-amber-300 hover:border-amber-500/40'
+              }`}
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline font-mono-tech">
+                {isOwnerUnlocked ? 'OWNER SUITE' : 'OWNER (PIN)'}
+              </span>
+            </button>
+          )}
+
+          {/* Install / Publish to Laptop Button (Guarded with Master Creator Key) */}
           <button
             onClick={handleInstallClick}
-            className="px-3 py-1.5 rounded-lg border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-tech font-semibold text-xs tracking-wider transition-all flex items-center gap-1.5 glow-arc-gold cursor-pointer"
+            title={isMasterPublishUnlocked ? "Install / Publish Unlocked (Creator Verified)" : "Install / Publish Locked: Creator Passcode Required"}
+            className={`px-3 py-1.5 rounded-lg border font-tech font-semibold text-xs tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+              isMasterPublishUnlocked
+                ? 'border-emerald-500/60 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300'
+                : 'border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 glow-arc-gold'
+            }`}
           >
-            <Download className="w-3.5 h-3.5 animate-bounce" />
+            {isMasterPublishUnlocked ? (
+              <Unlock className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+            )}
             <span>INSTALL / PUBLISH</span>
           </button>
         </div>
