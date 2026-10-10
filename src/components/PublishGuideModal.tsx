@@ -14,7 +14,8 @@ import {
   Github,
   Package,
   Copy,
-  Check
+  Check,
+  Play
 } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
 import { useToast } from '../context/ToastContext';
@@ -71,7 +72,25 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
 
       addToast({
         title: 'Downloading .exe Installer',
-        message: 'Downloading JARVIS-IronMan-Gauntlet-Setup.exe for Windows 10/11!',
+        message: 'Downloading genuine compiled JARVIS-IronMan-Gauntlet-Setup.exe (x64 PE Binary)!',
+        type: 'status',
+      });
+    });
+  };
+
+  const downloadLauncherBat = () => {
+    requireMasterPublishAccess(() => {
+      soundFx.playHudBeep('confirm');
+      const link = document.createElement('a');
+      link.href = '/api/download/jarvis-launcher.bat';
+      link.download = 'JARVIS-Launcher.bat';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      addToast({
+        title: 'Downloading .BAT Launcher',
+        message: 'Downloading native Windows JARVIS-Launcher.bat (1-Click Run - Never Corrupted)!',
         type: 'status',
       });
     });
@@ -223,6 +242,15 @@ export const PublishGuideModal: React.FC<PublishGuideModalProps> = ({
               >
                 <Download className="w-4 h-4" />
                 <span>DOWNLOAD WINDOWS .EXE</span>
+              </button>
+
+              {/* Windows .BAT 1-Click Launcher */}
+              <button
+                onClick={downloadLauncherBat}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-teal-700 to-emerald-700 hover:from-teal-600 hover:to-emerald-600 text-white font-tech font-bold flex items-center gap-2 transition-all cursor-pointer border border-emerald-400/40"
+              >
+                <Play className="w-4 h-4" />
+                <span>NATIVE .BAT LAUNCHER</span>
               </button>
 
               <button

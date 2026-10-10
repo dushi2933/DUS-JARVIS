@@ -43,7 +43,9 @@ import {
   TrendingUp,
   DollarSign,
   Building2,
-  Crown
+  Crown,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { Header } from './components/Header';
 import { CockpitHudView } from './components/CockpitHudView';
@@ -84,6 +86,9 @@ import { StarkInvestmentsPortal } from './components/StarkInvestmentsPortal';
 import { StarkFinancialBridge } from './components/StarkFinancialBridge';
 import { StarkOwnerPanel } from './components/StarkOwnerPanel';
 import { MasterCreatorGateModal } from './components/MasterCreatorGateModal';
+import { StarkBlueprintSchematicHud } from './components/StarkBlueprintSchematicHud';
+import { JarvisDesktopVoiceAssistant } from './components/JarvisDesktopVoiceAssistant';
+import { motion, AnimatePresence } from 'motion/react';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { OwnerAuthProvider, useOwnerAuth } from './context/OwnerAuthContext';
@@ -104,6 +109,8 @@ function MainAppContent() {
   const { requireMasterPublishAccess, ownerAccounts, switchAccount, unlockOwnerWithPin } = useOwnerAuth();
 
   const [activeTab, setActiveTab] = useState<
+    | 'blueprint'
+    | 'desktopAssistant'
     | 'owner'
     | 'cockpit'
     | 'investments'
@@ -162,13 +169,29 @@ function MainAppContent() {
     return 'cockpit';
   });
 
-  // Deep-link auto-switch for specific owner accounts (e.g. ?portal=owner&acc=owner-2, ?owner=tony, ?ps=1234567)
+  // 2 Master Modes: 'old-blueprint' (Stark Blueprint Schematic HUD) vs 'new-voice-assistant' (Jarvis Desktop Voice Assistant)
+  const [mainMode, setMainMode] = useState<'old-blueprint' | 'new-voice-assistant'>('old-blueprint');
+  // Mode 2 Full Screen Mode state (defaults to true so Mode 2 fills the entire display)
+  const [isMode2FullScreen, setIsMode2FullScreen] = useState(true);
+
+  // Deep-link auto-switch for specific owner accounts (e.g. ?portal=owner&acc=owner-2, ?owner=tony, ?ps=1234567, ?mode=2)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search);
       const ownerParam = p.get('owner')?.toLowerCase();
       const accParam = p.get('acc');
       const pinParam = p.get('ps') || p.get('pin') || p.get('password');
+      const modeParam = p.get('mode')?.toLowerCase();
+
+      if (modeParam === '2' || modeParam === 'assistant' || modeParam === 'new') {
+        setMainMode('new-voice-assistant');
+        setActiveTab('desktopAssistant');
+        setIsMode2FullScreen(true);
+      } else if (modeParam === '1' || modeParam === 'blueprint' || modeParam === 'old') {
+        setMainMode('old-blueprint');
+        setActiveTab('blueprint');
+        setIsMode2FullScreen(false);
+      }
 
       let targetAccount = null;
       if (accParam) {
@@ -189,6 +212,17 @@ function MainAppContent() {
       }
     }
   }, [ownerAccounts, switchAccount, unlockOwnerWithPin]);
+
+  // Global Keyboard listener for Mode 2 Full Screen escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeTab === 'desktopAssistant' && isMode2FullScreen) {
+        setIsMode2FullScreen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab, isMode2FullScreen]);
 
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isBiometricsOpen, setIsBiometricsOpen] = useState(false);
@@ -326,6 +360,43 @@ function MainAppContent() {
         addToast({
           title: 'Real-World Comm Bridge Online',
           message: 'WebRTC P2P frequency ready. Copy your invite link and send it to your friends!',
+          type: 'status',
+        });
+        break;
+      }
+
+      case 'open_mode_2':
+      case 'open_mode_two':
+      case 'open_desktop_assistant':
+      case 'mode_2':
+      case 'mode_2_fullscreen':
+      case 'mode_2_full_screen':
+      case 'desktop_assistant':
+      case 'voice_assistant': {
+        soundFx.playHudBeep('mode');
+        setMainMode('new-voice-assistant');
+        setActiveTab('desktopAssistant');
+        setIsMode2FullScreen(true);
+        addToast({
+          title: 'Mode 2 Full Screen Online',
+          message: 'Jarvis Desktop Voice Assistant full screen HUD matrix engaged.',
+          type: 'protocol',
+        });
+        break;
+      }
+
+      case 'open_mode_1':
+      case 'open_mode_one':
+      case 'mode_1':
+      case 'blueprint':
+      case 'blueprint_hud': {
+        soundFx.playHudBeep('mode');
+        setMainMode('old-blueprint');
+        setActiveTab('blueprint');
+        setIsMode2FullScreen(false);
+        addToast({
+          title: 'Mode 1 Blueprint HUD Online',
+          message: 'Vintage Stark Industries Mark Armor Blueprint Schematic HUD active.',
           type: 'status',
         });
         break;
@@ -949,6 +1020,108 @@ function MainAppContent() {
         }}
       />
 
+      {/* ========================================================================= */}
+      {/* MODE 2 FULL SCREEN TAKEOVER: JARVIS DESKTOP VOICE ASSISTANT OS            */}
+      {/* ========================================================================= */}
+      {activeTab === 'desktopAssistant' && isMode2FullScreen && (
+        <div className="fixed inset-0 z-50 bg-[#020407] flex flex-col w-screen h-screen overflow-hidden select-none animate-fade-in">
+          {/* Top Tactical Full Screen HUD Header */}
+          <div className="relative z-30 flex items-center justify-between px-3 sm:px-6 py-2.5 border-b border-emerald-500/30 bg-[#020712]/95 backdrop-blur-md">
+            {/* Left: Branding & Status */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="font-tech text-base sm:text-lg font-black tracking-widest text-emerald-400 italic">
+                  STARK INDUSTRIES
+                </span>
+                <span className="text-emerald-500/60 font-mono text-sm tracking-tighter">//</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 border-l border-emerald-500/30 pl-3">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs font-mono text-emerald-300 font-bold tracking-wider">
+                  MODE 2: JARVIS DESKTOP VOICE ASSISTANT [FULL SCREEN OS]
+                </span>
+              </div>
+              <span className="text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-bold hidden md:inline">
+                FULL SCREEN ACTIVE
+              </span>
+            </div>
+
+            {/* Center: Creator & Git Clearance */}
+            <div className="hidden xl:flex items-center gap-2 text-[11px] font-mono bg-gray-950/80 border border-emerald-500/30 px-3 py-1 rounded-xl">
+              <span className="text-gray-400">CLEARANCE:</span>
+              <span className="text-amber-300 font-bold">Lisara Kodikara (Dushi)</span>
+              <span className="text-gray-600">|</span>
+              <span className="text-cyan-300">jdushi@gmail.com</span>
+              <span className="text-gray-600">|</span>
+              <span className="text-emerald-400">github.com/dushi2933/DUS-JARVIS</span>
+            </div>
+
+            {/* Right: Controls & Toggles */}
+            <div className="flex items-center gap-2">
+              {/* Switch to Mode 1 (Blueprint) */}
+              <button
+                onClick={() => {
+                  soundFx.playHudBeep('mode');
+                  setMainMode('old-blueprint');
+                  setActiveTab('blueprint');
+                  setIsMode2FullScreen(false);
+                }}
+                className="px-3 py-1.5 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/50 font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow transition-all"
+                title="Switch to Mode 1: Blueprint Schematic HUD"
+              >
+                <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden sm:inline">MODE 1 (BLUEPRINT)</span>
+              </button>
+
+              {/* Exit Full Screen / Dock to Embedded */}
+              <button
+                onClick={() => {
+                  soundFx.playHudBeep('subtle');
+                  setIsMode2FullScreen(false);
+                }}
+                className="px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-700 font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                title="Exit Full Screen Mode (Dock to windowed view) [ESC]"
+              >
+                <Minimize2 className="w-3.5 h-3.5 text-gray-400" />
+                <span className="hidden sm:inline">WINDOWED [ESC]</span>
+              </button>
+
+              {/* Real Native Browser Fullscreen */}
+              <button
+                onClick={() => {
+                  soundFx.playHudBeep('subtle');
+                  if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                  } else {
+                    document.exitFullscreen().catch(() => {});
+                  }
+                }}
+                className="p-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 cursor-pointer transition-all"
+                title="Toggle Native Browser Fullscreen (F11)"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Full Screen Ambient Holographic Scanline */}
+          <div className="absolute inset-x-0 top-11 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_25px_#10b981] animate-scanline-sweep pointer-events-none z-40" />
+
+          {/* Full Screen Jarvis Desktop Voice Assistant Body */}
+          <div className="flex-1 min-h-0 relative w-full h-full overflow-hidden">
+            <JarvisDesktopVoiceAssistant
+              isFullscreen={true}
+              onToggleFullscreen={() => setIsMode2FullScreen(false)}
+              onSwitchToMode1={() => {
+                setMainMode('old-blueprint');
+                setActiveTab('blueprint');
+                setIsMode2FullScreen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Stark HUD Header */}
       <Header
         onReset={handleReset}
@@ -960,6 +1133,18 @@ function MainAppContent() {
         onOpenBiometrics={() => setIsBiometricsOpen(true)}
         isWakeWordEnabled={isWakeWordEnabled}
         onToggleWakeWord={handleToggleWakeWord}
+        activeMainMode={mainMode}
+        onSelectMainMode={(m) => {
+          setMainMode(m);
+          soundFx.playHudBeep('mode');
+          if (m === 'old-blueprint') {
+            setActiveTab('blueprint');
+            setIsMode2FullScreen(false);
+          } else {
+            setActiveTab('desktopAssistant');
+            setIsMode2FullScreen(true);
+          }
+        }}
       />
 
       {/* Main Container */}
@@ -1010,13 +1195,13 @@ function MainAppContent() {
           </div>
         </div>
 
-        {/* Navigation Tabs (32 Operational Centers) */}
+        {/* Navigation Tabs (Operational Centers) */}
         <div className="flex items-center gap-1.5 p-1 bg-gray-900/90 border border-cyan-500/20 rounded-xl overflow-x-auto">
           {[
-            { id: 'owner', label: '👑 Stark Owner Executive Suite (10 Accounts)', icon: <Crown className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
-            { id: 'investments', label: 'Stark Investments Portal', icon: <TrendingUp className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
-            { id: 'financialBridge', label: 'Stark Financial Bridge (Vault & 2FA)', icon: <Building2 className="w-3.5 h-3.5 text-emerald-400" /> },
+            { id: 'blueprint', label: '⚡ Mode 1: Stark Blueprint HUD (Old)', icon: <Sliders className="w-3.5 h-3.5 text-cyan-400 animate-pulse" /> },
+            { id: 'desktopAssistant', label: '🎙️ Mode 2: Jarvis Desktop Assistant (New)', icon: <Bot className="w-3.5 h-3.5 text-emerald-400 animate-pulse" /> },
             { id: 'cockpit', label: 'Cockpit Wireframe HUD', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+            { id: 'owner', label: '👑 Stark Owner Executive Suite (10 Accounts)', icon: <Crown className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
             { id: 'virtualLaptop', label: 'Tony Stark Touchscreen Laptop', icon: <Laptop className="w-3.5 h-3.5 text-amber-400 animate-pulse" /> },
             { id: 'laptopBridge', label: 'Laptop OS Uplink', icon: <Laptop className="w-3.5 h-3.5 text-cyan-300" /> },
             { id: 'nanoForge', label: 'Nanotech Weapons Forge', icon: <Sword className="w-3.5 h-3.5 text-cyan-400 animate-pulse" /> },
@@ -1057,6 +1242,13 @@ function MainAppContent() {
                       setActiveTab('publishing');
                     });
                   } else {
+                    if (tab.id === 'desktopAssistant') {
+                      setMainMode('new-voice-assistant');
+                      setIsMode2FullScreen(true);
+                    } else if (tab.id === 'blueprint') {
+                      setMainMode('old-blueprint');
+                      setIsMode2FullScreen(false);
+                    }
                     setActiveTab(tab.id as any);
                   }
                 }}
@@ -1080,6 +1272,95 @@ function MainAppContent() {
             onNavigateTab={(tab) => setActiveTab(tab as any)}
           />
         )}
+
+        {/* SMOOTH MODE TRANSITION ANIMATION: OLD BLUEPRINT vs NEW VOICE ASSISTANT */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'blueprint' && (
+            <motion.div
+              key="mode-old-blueprint"
+              initial={{ opacity: 0, y: 15, scale: 0.985, filter: 'blur(8px) brightness(1.25)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px) brightness(1)' }}
+              exit={{ opacity: 0, y: -15, scale: 0.985, filter: 'blur(8px) brightness(0.8)' }}
+              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full"
+            >
+              {/* High-Tech Holographic Laser Scanline Sweep */}
+              <div className="absolute inset-x-0 -top-1 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_20px_#00f0ff] animate-scanline-sweep pointer-events-none z-30" />
+              
+              {/* High-Tech Mode Shift Feedback Chip */}
+              <div className="flex items-center justify-between mb-2 px-1">
+                <div className="flex items-center gap-2 text-[10px] font-mono">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                  <span className="text-cyan-300 font-bold uppercase tracking-wider">
+                    ACTIVE HUD MODE // 01: VINTAGE STARK BLUEPRINT SCHEMATIC
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-cyan-400/70">
+                  LAYOUT RECONFIGURED · 60 FPS QUANTUM RENDER
+                </span>
+              </div>
+
+              <StarkBlueprintSchematicHud
+                gauntletState={gauntletState}
+                markProfile={currentMarkProfile}
+                onChargeRepulsor={handleChargeRepulsor}
+                onFireRepulsor={handleFireRepulsor}
+                isStandaloneTab={true}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'desktopAssistant' && !isMode2FullScreen && (
+            <motion.div
+              key="mode-new-voice-assistant"
+              initial={{ opacity: 0, y: 15, scale: 0.985, filter: 'blur(8px) brightness(1.25)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px) brightness(1)' }}
+              exit={{ opacity: 0, y: -15, scale: 0.985, filter: 'blur(8px) brightness(0.8)' }}
+              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full"
+            >
+              {/* High-Tech Holographic Laser Scanline Sweep */}
+              <div className="absolute inset-x-0 -top-1 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_20px_#10b981] animate-scanline-sweep pointer-events-none z-30" />
+              
+              {/* High-Tech Mode Shift Feedback Chip & Expand to Full Screen Button */}
+              <div className="flex items-center justify-between mb-2 px-1 flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-[10px] font-mono">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-emerald-300 font-bold uppercase tracking-wider">
+                    ACTIVE HUD MODE // 02: JARVIS DESKTOP VOICE ASSISTANT (EMBEDDED)
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      soundFx.playHudBeep('confirm');
+                      setIsMode2FullScreen(true);
+                    }}
+                    className="px-3 py-1 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-900 font-tech font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
+                    title="Expand Mode 2 to Full Screen View"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>EXPAND TO FULL SCREEN</span>
+                  </button>
+
+                  <span className="text-[10px] font-mono text-emerald-400/70 hidden sm:inline">
+                    NEURAL VOICE PIPELINE SYNCHRONIZED
+                  </span>
+                </div>
+              </div>
+
+              <JarvisDesktopVoiceAssistant
+                isFullscreen={false}
+                onToggleFullscreen={() => setIsMode2FullScreen(true)}
+                onSwitchToMode1={() => {
+                  setMainMode('old-blueprint');
+                  setActiveTab('blueprint');
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Tab 0: Stark Investments & Angel Backer Syndicate Portal */}
         {activeTab === 'investments' && (

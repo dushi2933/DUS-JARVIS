@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type StarkTheme = 
+  | 'stark-blueprint'
   | 'stark-cyan' 
   | 'whatsapp-emerald' 
   | 'android-messages'
@@ -22,6 +23,18 @@ export interface ThemeConfig {
 }
 
 export const THEME_CONFIGS: Record<StarkTheme, ThemeConfig> = {
+  'stark-blueprint': {
+    id: 'stark-blueprint',
+    name: 'Stark Blueprint Schematic (Wireframe HUD)',
+    description: 'Authentic Mark IV/LXXXV drafting blueprint with rotating J.A.R.V.I.S. Core & orthogonal elevations',
+    primaryColor: '#00f0ff',
+    accentColor: '#ef4444',
+    glowClass: 'shadow-[0_0_25px_rgba(0,240,255,0.45)]',
+    borderClass: 'border-cyan-400/50',
+    bgGlow: 'bg-[#03070d]/90',
+    textGlow: 'text-cyan-300',
+    badgeBg: 'bg-cyan-950/90 text-cyan-200 border-cyan-400/50',
+  },
   'stark-cyan': {
     id: 'stark-cyan',
     name: 'Arc Reactor Cyan',
@@ -111,7 +124,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem('stark_gauntlet_theme') as StarkTheme;
       if (saved && THEME_CONFIGS[saved]) return saved;
     }
-    return 'stark-cyan';
+    return 'stark-blueprint';
   });
 
   const themeConfig = THEME_CONFIGS[currentTheme];

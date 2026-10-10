@@ -21,7 +21,8 @@ import {
   Cpu,
   Bot,
   Skull,
-  Glasses
+  Glasses,
+  Sliders
 } from 'lucide-react';
 import { GauntletState, MarkProfile, JarvisDialogue } from '../types/gauntlet';
 import { soundFx } from '../utils/audioEffects';
@@ -29,6 +30,8 @@ import { jarvisVoice, AiPersona } from '../utils/speech';
 import { useToast } from '../context/ToastContext';
 import { FlightTelemetryWidget } from './FlightTelemetryWidget';
 import { SuitComponentBatteryIndicators } from './SuitComponentBatteryIndicators';
+import { StarkBlueprintSchematicHud } from './StarkBlueprintSchematicHud';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface CockpitHudViewProps {
   gauntletState: GauntletState;
@@ -66,6 +69,7 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
   const [latestJarvisSpeech, setLatestJarvisSpeech] = useState<string>(
     'Systems online, Mr. Stark. Central Arc Core and all flank telemetry arrays stand synchronized at your command, Sir.'
   );
+  const [centerDisplayMode, setCenterDisplayMode] = useState<'blueprint' | 'orb'>('blueprint');
 
   useEffect(() => {
     return jarvisVoice.addPersonaListener((p) => {
@@ -391,7 +395,73 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
         {/* ========================================================================= */}
         {/* CENTER COLUMN: The Iconic Circular Arc Reactor & Gauntlet Core             */}
         {/* ========================================================================= */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[500px] p-4 bg-gray-950/60 border border-cyan-500/30 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="lg:col-span-6 flex flex-col items-center justify-center relative min-h-[500px] p-3 sm:p-4 bg-gray-950/60 border border-cyan-500/30 rounded-2xl shadow-2xl overflow-hidden space-y-3">
+          {/* Top Center Mode Switcher */}
+          <div className="relative z-20 flex items-center justify-between w-full border-b border-cyan-500/20 pb-2 px-1">
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-gray-900/90 border border-cyan-500/30 text-xs font-tech">
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playHudBeep('mode');
+                  setCenterDisplayMode('blueprint');
+                }}
+                className={`px-3 py-1 rounded flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
+                  centerDisplayMode === 'blueprint'
+                    ? 'bg-cyan-500 text-gray-950 shadow-[0_0_12px_rgba(0,240,255,0.6)]'
+                    : 'text-gray-400 hover:text-cyan-300'
+                }`}
+              >
+                <Sliders className="w-3 h-3" />
+                <span>STARK BLUEPRINT SCHEMATIC</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFx.playHudBeep('mode');
+                  setCenterDisplayMode('orb');
+                }}
+                className={`px-3 py-1 rounded flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
+                  centerDisplayMode === 'orb'
+                    ? 'bg-cyan-500 text-gray-950 shadow-[0_0_12px_rgba(0,240,255,0.6)]'
+                    : 'text-gray-400 hover:text-cyan-300'
+                }`}
+              >
+                <Zap className="w-3 h-3 text-amber-400" />
+                <span>ARC CORE ORB</span>
+              </button>
+            </div>
+
+            <span className="text-[10px] font-mono text-cyan-400/80 hidden sm:inline">
+              HUD: {centerDisplayMode === 'blueprint' ? 'BLUEPRINT WIREFRAME' : 'ROTATING ARC ORB'}
+            </span>
+          </div>
+
+          {/* Conditional View 1: Full Stark Blueprint Schematic */}
+          {centerDisplayMode === 'blueprint' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.985, filter: 'blur(5px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full relative z-10"
+            >
+              <StarkBlueprintSchematicHud
+                gauntletState={gauntletState}
+                markProfile={markProfile}
+                onChargeRepulsor={onChargeRepulsor}
+                onFireRepulsor={onFireRepulsor}
+              />
+            </motion.div>
+          )}
+
+          {/* Conditional View 2: Rotating Arc Orb Container */}
+          {centerDisplayMode === 'orb' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.985, filter: 'blur(5px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full flex flex-col items-center justify-center relative py-4"
+            >
           {/* Subtle background radar grid */}
           <div className="absolute inset-0 holo-grid opacity-30 pointer-events-none" />
 
@@ -491,6 +561,8 @@ export const CockpitHudView: React.FC<CockpitHudViewProps> = ({
               )}
             </svg>
           </div>
+        </motion.div>
+      )}
 
           {/* Active AI Audioreactive HUD Banner right below central orb */}
           <div className={`w-full max-w-md mt-2 p-3 bg-gray-950/80 border rounded-xl relative z-10 text-center shadow-lg transition-all ${

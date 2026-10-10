@@ -142,3 +142,27 @@
   animation: toast-slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* High-tech scanline sweep animation */
+@keyframes scanline-sweep {
+  0% {
+    transform: translateY(0) scaleX(0.3);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(400px) scaleX(0.95);
+    opacity: 0;
+  }
+}
+
+.animate-scanline-sweep {
+  animation: scanline-sweep 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+

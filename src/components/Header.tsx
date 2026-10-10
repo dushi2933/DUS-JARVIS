@@ -20,7 +20,9 @@ import {
   Skull,
   Glasses,
   ChevronDown,
-  Crown
+  Crown,
+  Sliders,
+  Layers
 } from 'lucide-react';
 import { soundFx } from '../utils/audioEffects';
 import { jarvisVoice, AiPersona } from '../utils/speech';
@@ -37,6 +39,8 @@ interface HeaderProps {
   onOpenBiometrics?: () => void;
   isWakeWordEnabled?: boolean;
   onToggleWakeWord?: () => void;
+  activeMainMode?: 'old-blueprint' | 'new-voice-assistant';
+  onSelectMainMode?: (mode: 'old-blueprint' | 'new-voice-assistant') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -49,6 +53,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenBiometrics,
   isWakeWordEnabled = false,
   onToggleWakeWord,
+  activeMainMode = 'old-blueprint',
+  onSelectMainMode,
 }) => {
   const { isMasterPublishUnlocked, requireMasterPublishAccess, isOwnerUnlocked } = useOwnerAuth();
   const [isMuted, setIsMuted] = useState(false);
@@ -255,6 +261,44 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{isWakeWordEnabled ? 'SAY "JARVIS"' : 'HOTWORD: OFF'}</span>
             </button>
           )}
+        </div>
+
+        {/* 2 MODES: OLD (BLUEPRINT SCHEMATIC) vs NEW (JARVIS DESKTOP ASSISTANT) */}
+        <div className="flex items-center p-1 rounded-xl bg-gray-950/90 border border-cyan-500/40 text-xs font-tech shadow-lg">
+          <button
+            onClick={() => {
+              soundFx.playHudBeep('mode');
+              if (onSelectMainMode) onSelectMainMode('old-blueprint');
+            }}
+            title="Old / Classic Mode: Vintage Stark Industries Mark Armor Holographic Blueprint Schematic HUD"
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
+              activeMainMode === 'old-blueprint'
+                ? 'bg-cyan-500 text-gray-950 shadow-[0_0_15px_rgba(0,240,255,0.6)]'
+                : 'text-gray-400 hover:text-cyan-300'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>OLD: BLUEPRINT</span>
+          </button>
+
+          <button
+            onClick={() => {
+              soundFx.playHudBeep('mode');
+              if (onSelectMainMode) onSelectMainMode('new-voice-assistant');
+            }}
+            title="Mode 2: Jarvis Desktop Voice Assistant (Full Screen Immersive OS with In-App Wikipedia, Music & Python)"
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all cursor-pointer ${
+              activeMainMode === 'new-voice-assistant'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-gray-950 shadow-[0_0_15px_rgba(16,185,129,0.6)] ring-1 ring-emerald-300'
+                : 'text-gray-400 hover:text-emerald-300'
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5 text-emerald-400" />
+            <span>NEW: ASSISTANT</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded font-mono bg-black/40 text-emerald-300 border border-emerald-500/40 uppercase tracking-tight">
+              FULL SCREEN
+            </span>
+          </button>
         </div>
 
         {/* Right: Quick Tactical Actions */}

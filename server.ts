@@ -979,13 +979,45 @@ wss.on('connection', (ws) => {
 
 // Direct executable and installer download endpoints for Windows & Desktop
 app.get('/api/download/jarvis-gauntlet-setup.exe', (req, res) => {
+  const binaryPath = path.resolve(__dirname, 'public/downloads/JARVIS-IronMan-Gauntlet-Setup.exe');
+  const rootBinary = path.resolve(__dirname, 'JARVIS-IronMan-Gauntlet.exe');
+
+  const targetPath = fs.existsSync(binaryPath) ? binaryPath : (fs.existsSync(rootBinary) ? rootBinary : null);
+
+  if (targetPath) {
+    res.setHeader('Content-Type', 'application/vnd.microsoft.portable-executable');
+    res.setHeader('Content-Disposition', 'attachment; filename="JARVIS-IronMan-Gauntlet-Setup.exe"');
+    res.sendFile(targetPath);
+    return;
+  }
+  res.status(404).send({ error: 'Executable binary not found' });
+});
+
+// Direct Portable Windows GUI Executable (.exe)
+app.get('/api/download/jarvis-portable.exe', (req, res) => {
+  const directPath = path.resolve(__dirname, 'public/downloads/JARVIS-Gauntlet-Direct.exe');
+  const rootDirect = path.resolve(__dirname, 'JARVIS-Gauntlet-Direct.exe');
+  const targetPath = fs.existsSync(directPath) ? directPath : (fs.existsSync(rootDirect) ? rootDirect : null);
+
+  if (targetPath) {
+    res.setHeader('Content-Type', 'application/vnd.microsoft.portable-executable');
+    res.setHeader('Content-Disposition', 'attachment; filename="JARVIS-Gauntlet-Direct.exe"');
+    res.sendFile(targetPath);
+    return;
+  }
+  res.status(404).send({ error: 'Portable binary not found' });
+});
+
+// Direct 1-Click Native Windows Batch Launcher (.bat) - Never corrupted
+app.get('/api/download/jarvis-launcher.bat', (req, res) => {
   const hostUrl = req.headers.host ? `https://${req.headers.host}` : 'https://ais-dev-gctvtzkyny3y2dejmhtmr3-258016456798.asia-southeast1.run.app';
   const windowsInstallerScript = `@echo off
-title J.A.R.V.I.S. Iron Man Gauntlet OS - Setup
+title J.A.R.V.I.S. Iron Man Gauntlet OS - Native Launcher
 color 0b
+cls
 echo =====================================================================
 echo           STARK INDUSTRIES - J.A.R.V.I.S. GAUNTLET OS
-echo               Windows Desktop Setup & Native Launcher
+echo             Windows 10/11 Desktop Launcher ^& Terminal Link
 echo =====================================================================
 echo.
 echo [1/3] Initializing Stark System Telemetry...
@@ -999,9 +1031,21 @@ echo [SUCCESS] J.A.R.V.I.S. Iron Man Gauntlet OS is active!
 echo Clearance level: ALPHA-1 AUTHORIZED (Tony Stark / Lisara Kodikara ^<jdushi@gmail.com^>).
 pause
 `;
-  res.setHeader('Content-Type', 'application/x-msdownload');
-  res.setHeader('Content-Disposition', 'attachment; filename="JARVIS-IronMan-Gauntlet-Setup.exe"');
+  res.setHeader('Content-Type', 'application/x-bat');
+  res.setHeader('Content-Disposition', 'attachment; filename="JARVIS-Launcher.bat"');
   res.send(windowsInstallerScript);
+});
+
+// Direct Python Script Download (.py) for VS Code
+app.get('/api/download/jarvis-assistant.py', (req, res) => {
+  const pyPath = path.resolve(__dirname, 'jarvis_desktop_assistant.py');
+  if (fs.existsSync(pyPath)) {
+    res.setHeader('Content-Type', 'text/x-python');
+    res.setHeader('Content-Disposition', 'attachment; filename="jarvis_desktop_assistant.py"');
+    res.sendFile(pyPath);
+    return;
+  }
+  res.status(404).send({ error: 'Python script not found' });
 });
 
 // Direct ZIP archive download containing full project source code
